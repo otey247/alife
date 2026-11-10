@@ -1,0 +1,225 @@
+<title>Strata Biosphere</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: field station. A specimen plate (the world) over a wide phylogeny dock, with an instrument column on the right. */
+:root {
+  --bg: #F1F2F0; --surface: #FFFFFF; --surface-2: #E7E9E6; --line: #CDD1CC; --fg: #121517; --fg-2: #4A5157; --fg-3: #7A8187;
+  --accent: #2444E0; --accent-fg: #FFFFFF; --plate: #0B1820;
+  --photo: #23894A; --herb: #1F6FC4; --carn: #CC3A2C; --omni: #B77A08; --mixo: #7D45C7;
+  --ui: "Instrument Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --serif: "Instrument Serif", "Iowan Old Style", Georgia, serif;
+  --mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #0D0F11; --surface: #15181B; --surface-2: #1F2327; --line: #30363B; --fg: #EDEFF0; --fg-2: #A7AEB4; --fg-3: #737A81;
+  --accent: #8497FF; --accent-fg: #0A0D16; --plate: #070D12;
+  --photo: #4FC474; --herb: #5BA6F2; --carn: #F26D5E; --omni: #E6B03C; --mixo: #B48AF2; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #0D0F11; --surface: #15181B; --surface-2: #1F2327; --line: #30363B; --fg: #EDEFF0; --fg-2: #A7AEB4; --fg-3: #737A81;
+  --accent: #8497FF; --accent-fg: #0A0D16; --plate: #070D12;
+  --photo: #4FC474; --herb: #5BA6F2; --carn: #F26D5E; --omni: #E6B03C; --mixo: #B48AF2; color-scheme: dark }
+
+html, body { height: 100%; }
+body { background: var(--bg); color: var(--fg); font-family: var(--ui); font-size: 13px; line-height: 1.4;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 12px; box-sizing: border-box; }
+*, *::before, *::after { box-sizing: border-box; }
+button, select, input { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.app { height: 100%; display: grid; grid-template-rows: auto minmax(0, 1fr); gap: 12px; }
+.bar { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 24px; }
+.brand { display: flex; align-items: baseline; gap: 10px; }
+.brand h1 { font: 400 30px/1 var(--serif); letter-spacing: -0.01em; margin: 0; }
+.brand span { font: 500 11px var(--mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--fg-3); }
+.transport { display: flex; align-items: center; gap: 8px; }
+.readout { display: flex; flex-wrap: wrap; gap: 4px 22px; margin: 0 0 0 auto; }
+.readout div { display: flex; flex-direction: column; }
+.readout dt { font: 500 10px var(--mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--fg-3); }
+.readout dd { margin: 0; font: 500 16px var(--mono); font-variant-numeric: tabular-nums; }
+
+.btn { height: 32px; padding: 0 14px; border-radius: 6px; border: 1px solid var(--fg); background: var(--surface); font-weight: 600; cursor: pointer; white-space: nowrap; }
+.btn:hover { background: var(--surface-2); }
+.btn.primary { background: var(--fg); color: var(--bg); min-width: 84px; }
+.btn.primary:hover { background: var(--fg-2); }
+.btn.small { height: 26px; padding: 0 10px; font-size: 12px; }
+.seg { display: inline-flex; border: 1px solid var(--fg); border-radius: 6px; overflow: hidden; background: var(--surface); }
+.seg button { height: 30px; padding: 0 11px; border: 0; background: transparent; font-weight: 600; cursor: pointer; font-size: 12px; white-space: nowrap; }
+.seg button + button { border-left: 1px solid var(--line); }
+.seg button[aria-pressed="true"] { background: var(--fg); color: var(--bg); }
+.seg.small button { height: 24px; padding: 0 8px; font-size: 11px; }
+select, input[type="number"] { height: 28px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); padding: 0 8px; min-width: 0; }
+input[type="range"] { width: 100%; accent-color: var(--fg); margin: 0; }
+
+.stage { display: grid; grid-template-columns: minmax(0, 1fr) 348px; grid-template-rows: minmax(0, 1.25fr) minmax(0, 1fr); gap: 12px; min-height: 0; }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; min-height: 0; min-width: 0; display: flex; flex-direction: column; overflow: hidden; }
+.world { grid-column: 1; grid-row: 1; background: var(--plate); border-color: var(--plate); position: relative; }
+.dock { grid-column: 1; grid-row: 2; }
+.side { grid-column: 2; grid-row: 1 / span 2; }
+.world canvas { width: 100%; height: 100%; display: block; touch-action: none; cursor: crosshair; }
+.overlay { position: absolute; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; pointer-events: none; }
+.overlay > * { pointer-events: auto; }
+.overlay.tl { top: 10px; left: 10px; right: 10px; }
+.overlay.bl { bottom: 10px; left: 10px; right: 10px; justify-content: space-between; }
+.world .seg { flex-wrap: wrap; max-width: 100%; }
+.world .seg, .world select { background: #0f1c25; border-color: #3a4a55; color: #e8eef2; }
+.world .seg button + button { border-left-color: #2a3842; }
+.world .seg button[aria-pressed="true"] { background: #e8eef2; color: #0b1820; }
+.world .brush { display: flex; align-items: center; gap: 6px; color: #b9c6ce; font: 500 11px var(--mono); background: #0f1c25; border: 1px solid #3a4a55; border-radius: 6px; padding: 0 8px; height: 26px; }
+.world .brush input { width: 80px; accent-color: #e8eef2; }
+.legend { font: 500 11px var(--mono); color: #b9c6ce; background: rgba(11, 24, 32, .8); padding: 4px 8px; border-radius: 4px; }
+
+.tabs { display: flex; align-items: center; gap: 4px; padding: 8px 10px; border-bottom: 1px solid var(--line); flex-wrap: wrap; }
+.tabs button.tab { height: 26px; padding: 0 10px; border: 0; border-radius: 5px; background: transparent; font-weight: 600; color: var(--fg-2); cursor: pointer; }
+.tabs button.tab[aria-selected="true"] { background: var(--fg); color: var(--bg); }
+.tabs .tools { margin-left: auto; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; color: var(--fg-2); font-size: 12px; }
+.tabs .tools label { display: flex; gap: 5px; align-items: center; }
+.body { flex: 1; min-height: 0; position: relative; }
+.body > canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; }
+.scroll { overflow: auto; height: 100%; padding: 14px; }
+
+h2 { font: 600 11px var(--mono); letter-spacing: 0.1em; text-transform: uppercase; color: var(--fg-3); margin: 18px 0 8px; }
+h2:first-child { margin-top: 0; }
+.ctl { display: grid; grid-template-columns: 1fr auto; gap: 2px 8px; margin-bottom: 10px; }
+.ctl label { font-weight: 500; }
+.ctl output { font: 500 12px var(--mono); font-variant-numeric: tabular-nums; }
+.ctl input { grid-column: 1 / -1; }
+.ctl small { grid-column: 1 / -1; color: var(--fg-3); font-size: 11.5px; }
+.row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 8px; }
+.row > select { flex: 1; }
+.row > input[type="number"] { width: 84px; }
+
+.sp-name { font: italic 400 26px/1.1 var(--serif); margin: 0 0 6px; overflow-wrap: anywhere; }
+.chips { display: flex; flex-wrap: wrap; gap: 5px; margin: 6px 0 10px; }
+.chip { font: 500 11px var(--mono); border: 1px solid var(--fg-3); border-radius: 99px; padding: 1px 8px; color: var(--fg-2); }
+.chip.role { border-color: var(--fg); color: var(--fg); display: inline-flex; align-items: center; gap: 5px; }
+.dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; flex: none; }
+.kv { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 10px 0; }
+.kv div { min-width: 0; }
+.kv dt { font: 500 10px var(--mono); letter-spacing: 0.06em; text-transform: uppercase; color: var(--fg-3); }
+.kv dd { margin: 0; font: 500 14px var(--mono); font-variant-numeric: tabular-nums; }
+.portrait { display: block; width: 100%; height: 150px; background: var(--plate); border-radius: 6px; }
+.diet { display: flex; height: 10px; border-radius: 2px; overflow: hidden; background: var(--surface-2); margin: 4px 0; }
+.diet i { display: block; height: 100%; }
+.dietkey { display: flex; gap: 12px; font-size: 11.5px; color: var(--fg-2); flex-wrap: wrap; }
+.dietkey span { display: inline-flex; align-items: center; gap: 4px; }
+.gene { display: grid; grid-template-columns: 118px 1fr 44px; gap: 8px; align-items: center; font-size: 12px; padding: 2px 0; }
+.gene .track { height: 6px; background: var(--surface-2); border-radius: 1px; position: relative; }
+.gene .track i { position: absolute; left: 0; top: 0; bottom: 0; background: var(--fg); border-radius: 1px; }
+.gene .track b { position: absolute; top: -3px; bottom: -3px; width: 2px; background: var(--accent); }
+.gene span:last-child { font: 500 11px var(--mono); text-align: right; font-variant-numeric: tabular-nums; }
+table.spp { width: 100%; border-collapse: collapse; }
+table.spp td, table.spp th { padding: 5px 4px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+table.spp th { font: 500 10px var(--mono); letter-spacing: 0.06em; text-transform: uppercase; color: var(--fg-3); }
+table.spp td.n { font: 500 12px var(--mono); text-align: right; font-variant-numeric: tabular-nums; }
+table.spp tr[data-sp] { cursor: pointer; }
+table.spp tr[data-sp]:hover td { background: var(--surface-2); }
+table.spp em { font: italic 400 16px/1.15 var(--serif); }
+table.spp small { color: var(--fg-3); display: block; font-size: 11px; }
+.link { background: none; border: 0; padding: 0; color: var(--accent); cursor: pointer; font-weight: 600; text-decoration: underline; text-underline-offset: 2px; }
+.muted { color: var(--fg-3); }
+pre.code { font: 400 11.5px/1.5 var(--mono); background: var(--surface-2); border-radius: 6px; padding: 10px; overflow-x: auto; margin: 6px 0 12px; }
+ol.pipe { margin: 0; padding-left: 20px; font: 500 12px var(--mono); }
+.log { list-style: none; margin: 0; padding: 0; }
+.log li { display: grid; grid-template-columns: 74px 1fr; gap: 10px; padding: 5px 0; border-bottom: 1px solid var(--line); }
+.log time { font: 500 11px var(--mono); color: var(--fg-3); font-variant-numeric: tabular-nums; }
+.log li[data-sp] { cursor: pointer; }
+.log li[data-sp]:hover { background: var(--surface-2); }
+#tip { position: fixed; z-index: 20; pointer-events: none; background: var(--fg); color: var(--bg); padding: 6px 9px; border-radius: 5px; font-size: 12px; max-width: 260px; }
+#tip em { font: italic 400 16px var(--serif); }
+#tip small { display: block; font: 500 11px var(--mono); opacity: .8; }
+
+@media (max-width: 980px) {
+  html, body { height: auto; }
+  .app { height: auto; display: flex; flex-direction: column; }
+  .stage { display: flex; flex-direction: column; }
+  .world { aspect-ratio: 960 / 700; max-width: 100%; }
+  @media (max-width: 600px) { .world { aspect-ratio: 1 / 1.05; } }
+  .dock { height: 440px; }
+  .side { max-height: none; }
+  .side .scroll { height: auto; overflow: visible; }
+  .readout { margin-left: 0; }
+  .side .body { position: static; }
+}
+@media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto; } }
+</style>
+
+<div class="app">
+  <header class="bar">
+    <div class="brand"><h1>Strata</h1><span>artificial life engine</span></div>
+    <div class="transport">
+      <button class="btn primary" id="play">Pause</button>
+      <div class="seg" id="speed" role="group" aria-label="Simulation speed">
+        <button data-v="1">1×</button><button data-v="4">4×</button><button data-v="16">16×</button><button data-v="max" aria-pressed="true">Max</button>
+      </div>
+    </div>
+    <dl class="readout">
+      <div><dt>Year</dt><dd id="r-year">0</dd></div>
+      <div><dt>Generations</dt><dd id="r-gen">0</dd></div>
+      <div><dt>Organisms</dt><dd id="r-pop">0</dd></div>
+      <div><dt>Species</dt><dd id="r-spp">0</dd></div>
+      <div><dt>Ticks / s</dt><dd id="r-tps">0</dd></div>
+    </dl>
+  </header>
+
+  <main class="stage">
+    <section class="panel world" aria-label="World">
+      <canvas id="world"></canvas>
+      <div class="overlay tl">
+        <div class="seg small" id="tool" role="group" aria-label="Tool">
+          <button data-v="inspect" aria-pressed="true">Inspect</button><button data-v="raise">Raise land</button><button data-v="lower">Lower land</button>
+          <button data-v="enrich">Enrich soil</button><button data-v="deplete">Deplete soil</button><button data-v="impact">Impact</button><button data-v="seed">Seed</button>
+        </div>
+        <select id="founder" aria-label="Founder to seed" hidden></select>
+        <label class="brush" id="brushwrap" hidden>Brush <input type="range" id="brush" min="10" max="120" value="45"></label>
+      </div>
+      <div class="overlay bl">
+        <span class="legend" id="legend"></span>
+        <span style="display:flex;gap:6px;align-items:center">
+          <div class="seg small" id="layer" role="group" aria-label="Map layer">
+            <button data-v="terrain" aria-pressed="true">Terrain</button><button data-v="temp">Temperature</button><button data-v="soil">Nutrients</button><button data-v="light">Ground light</button>
+          </div>
+          <div class="seg small"><button id="zout" aria-label="Zoom out">−</button><button id="zfit">Fit</button><button id="zin" aria-label="Zoom in">+</button></div>
+        </span>
+      </div>
+    </section>
+
+    <section class="panel dock">
+      <div class="tabs" id="docktabs">
+        <button class="tab" data-v="phylo" aria-selected="true">Phylogeny</button>
+        <button class="tab" data-v="pop" aria-selected="false">Populations</button>
+        <button class="tab" data-v="traits" aria-selected="false">Trait space</button>
+        <button class="tab" data-v="log" aria-selected="false">Chronicle</button>
+        <div class="tools" id="tools-phylo">
+          <label>Show lineages peaking at <select id="ph-min"><option value="10">10+</option><option value="40" selected>40+</option><option value="150">150+</option></select></label>
+          <label><input type="checkbox" id="ph-extant"> Living lines only</label>
+          <div class="seg small" id="ph-color"><button data-v="pigment" aria-pressed="true">Pigment</button><button data-v="role">Diet</button></div>
+          <button class="btn small" id="ph-fit">Fit</button>
+        </div>
+        <div class="tools" id="tools-traits" hidden>
+          <label>X <select id="tr-x"></select></label><label>Y <select id="tr-y"></select></label>
+        </div>
+      </div>
+      <div class="body">
+        <canvas id="dockcv"></canvas>
+        <div class="scroll" id="logwrap" hidden><ul class="log" id="log"></ul></div>
+      </div>
+    </section>
+
+    <aside class="panel side">
+      <div class="tabs" id="sidetabs">
+        <button class="tab" data-v="env" aria-selected="true">Environment</button>
+        <button class="tab" data-v="inspect" aria-selected="false">Life</button>
+        <button class="tab" data-v="engine" aria-selected="false">Engine</button>
+      </div>
+      <div class="body">
+        <div class="scroll" id="p-env"></div>
+        <div class="scroll" id="p-inspect" hidden></div>
+        <div class="scroll" id="p-engine" hidden></div>
+      </div>
+    </aside>
+  </main>
+</div>
+<div id="tip" hidden></div>
+<script src="engine.js"></script>
+<script src="ui.js"></script>

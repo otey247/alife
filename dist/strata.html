@@ -1,0 +1,1942 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>body{margin:0}[hidden]{display:none!important}</style>
+</head>
+<body>
+<title>Strata Biosphere</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: field station. A specimen plate (the world) over a wide phylogeny dock, with an instrument column on the right. */
+:root {
+  --bg: #F1F2F0; --surface: #FFFFFF; --surface-2: #E7E9E6; --line: #CDD1CC; --fg: #121517; --fg-2: #4A5157; --fg-3: #7A8187;
+  --accent: #2444E0; --accent-fg: #FFFFFF; --plate: #0B1820;
+  --photo: #23894A; --herb: #1F6FC4; --carn: #CC3A2C; --omni: #B77A08; --mixo: #7D45C7;
+  --ui: "Instrument Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --serif: "Instrument Serif", "Iowan Old Style", Georgia, serif;
+  --mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #0D0F11; --surface: #15181B; --surface-2: #1F2327; --line: #30363B; --fg: #EDEFF0; --fg-2: #A7AEB4; --fg-3: #737A81;
+  --accent: #8497FF; --accent-fg: #0A0D16; --plate: #070D12;
+  --photo: #4FC474; --herb: #5BA6F2; --carn: #F26D5E; --omni: #E6B03C; --mixo: #B48AF2; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #0D0F11; --surface: #15181B; --surface-2: #1F2327; --line: #30363B; --fg: #EDEFF0; --fg-2: #A7AEB4; --fg-3: #737A81;
+  --accent: #8497FF; --accent-fg: #0A0D16; --plate: #070D12;
+  --photo: #4FC474; --herb: #5BA6F2; --carn: #F26D5E; --omni: #E6B03C; --mixo: #B48AF2; color-scheme: dark }
+
+html, body { height: 100%; }
+body { background: var(--bg); color: var(--fg); font-family: var(--ui); font-size: 13px; line-height: 1.4;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 12px; box-sizing: border-box; }
+*, *::before, *::after { box-sizing: border-box; }
+button, select, input { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.app { height: 100%; display: grid; grid-template-rows: auto minmax(0, 1fr); gap: 12px; }
+.bar { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 24px; }
+.brand { display: flex; align-items: baseline; gap: 10px; }
+.brand h1 { font: 400 30px/1 var(--serif); letter-spacing: -0.01em; margin: 0; }
+.brand span { font: 500 11px var(--mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--fg-3); }
+.transport { display: flex; align-items: center; gap: 8px; }
+.readout { display: flex; flex-wrap: wrap; gap: 4px 22px; margin: 0 0 0 auto; }
+.readout div { display: flex; flex-direction: column; }
+.readout dt { font: 500 10px var(--mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--fg-3); }
+.readout dd { margin: 0; font: 500 16px var(--mono); font-variant-numeric: tabular-nums; }
+
+.btn { height: 32px; padding: 0 14px; border-radius: 6px; border: 1px solid var(--fg); background: var(--surface); font-weight: 600; cursor: pointer; white-space: nowrap; }
+.btn:hover { background: var(--surface-2); }
+.btn.primary { background: var(--fg); color: var(--bg); min-width: 84px; }
+.btn.primary:hover { background: var(--fg-2); }
+.btn.small { height: 26px; padding: 0 10px; font-size: 12px; }
+.seg { display: inline-flex; border: 1px solid var(--fg); border-radius: 6px; overflow: hidden; background: var(--surface); }
+.seg button { height: 30px; padding: 0 11px; border: 0; background: transparent; font-weight: 600; cursor: pointer; font-size: 12px; white-space: nowrap; }
+.seg button + button { border-left: 1px solid var(--line); }
+.seg button[aria-pressed="true"] { background: var(--fg); color: var(--bg); }
+.seg.small button { height: 24px; padding: 0 8px; font-size: 11px; }
+select, input[type="number"] { height: 28px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); padding: 0 8px; min-width: 0; }
+input[type="range"] { width: 100%; accent-color: var(--fg); margin: 0; }
+
+.stage { display: grid; grid-template-columns: minmax(0, 1fr) 348px; grid-template-rows: minmax(0, 1.25fr) minmax(0, 1fr); gap: 12px; min-height: 0; }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; min-height: 0; min-width: 0; display: flex; flex-direction: column; overflow: hidden; }
+.world { grid-column: 1; grid-row: 1; background: var(--plate); border-color: var(--plate); position: relative; }
+.dock { grid-column: 1; grid-row: 2; }
+.side { grid-column: 2; grid-row: 1 / span 2; }
+.world canvas { width: 100%; height: 100%; display: block; touch-action: none; cursor: crosshair; }
+.overlay { position: absolute; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; pointer-events: none; }
+.overlay > * { pointer-events: auto; }
+.overlay.tl { top: 10px; left: 10px; right: 10px; }
+.overlay.bl { bottom: 10px; left: 10px; right: 10px; justify-content: space-between; }
+.world .seg { flex-wrap: wrap; max-width: 100%; }
+.world .seg, .world select { background: #0f1c25; border-color: #3a4a55; color: #e8eef2; }
+.world .seg button + button { border-left-color: #2a3842; }
+.world .seg button[aria-pressed="true"] { background: #e8eef2; color: #0b1820; }
+.world .brush { display: flex; align-items: center; gap: 6px; color: #b9c6ce; font: 500 11px var(--mono); background: #0f1c25; border: 1px solid #3a4a55; border-radius: 6px; padding: 0 8px; height: 26px; }
+.world .brush input { width: 80px; accent-color: #e8eef2; }
+.legend { font: 500 11px var(--mono); color: #b9c6ce; background: rgba(11, 24, 32, .8); padding: 4px 8px; border-radius: 4px; }
+
+.tabs { display: flex; align-items: center; gap: 4px; padding: 8px 10px; border-bottom: 1px solid var(--line); flex-wrap: wrap; }
+.tabs button.tab { height: 26px; padding: 0 10px; border: 0; border-radius: 5px; background: transparent; font-weight: 600; color: var(--fg-2); cursor: pointer; }
+.tabs button.tab[aria-selected="true"] { background: var(--fg); color: var(--bg); }
+.tabs .tools { margin-left: auto; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; color: var(--fg-2); font-size: 12px; }
+.tabs .tools label { display: flex; gap: 5px; align-items: center; }
+.body { flex: 1; min-height: 0; position: relative; }
+.body > canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; }
+.scroll { overflow: auto; height: 100%; padding: 14px; }
+
+h2 { font: 600 11px var(--mono); letter-spacing: 0.1em; text-transform: uppercase; color: var(--fg-3); margin: 18px 0 8px; }
+h2:first-child { margin-top: 0; }
+.ctl { display: grid; grid-template-columns: 1fr auto; gap: 2px 8px; margin-bottom: 10px; }
+.ctl label { font-weight: 500; }
+.ctl output { font: 500 12px var(--mono); font-variant-numeric: tabular-nums; }
+.ctl input { grid-column: 1 / -1; }
+.ctl small { grid-column: 1 / -1; color: var(--fg-3); font-size: 11.5px; }
+.row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 8px; }
+.row > select { flex: 1; }
+.row > input[type="number"] { width: 84px; }
+
+.sp-name { font: italic 400 26px/1.1 var(--serif); margin: 0 0 6px; overflow-wrap: anywhere; }
+.chips { display: flex; flex-wrap: wrap; gap: 5px; margin: 6px 0 10px; }
+.chip { font: 500 11px var(--mono); border: 1px solid var(--fg-3); border-radius: 99px; padding: 1px 8px; color: var(--fg-2); }
+.chip.role { border-color: var(--fg); color: var(--fg); display: inline-flex; align-items: center; gap: 5px; }
+.dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; flex: none; }
+.kv { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 10px 0; }
+.kv div { min-width: 0; }
+.kv dt { font: 500 10px var(--mono); letter-spacing: 0.06em; text-transform: uppercase; color: var(--fg-3); }
+.kv dd { margin: 0; font: 500 14px var(--mono); font-variant-numeric: tabular-nums; }
+.portrait { display: block; width: 100%; height: 150px; background: var(--plate); border-radius: 6px; }
+.diet { display: flex; height: 10px; border-radius: 2px; overflow: hidden; background: var(--surface-2); margin: 4px 0; }
+.diet i { display: block; height: 100%; }
+.dietkey { display: flex; gap: 12px; font-size: 11.5px; color: var(--fg-2); flex-wrap: wrap; }
+.dietkey span { display: inline-flex; align-items: center; gap: 4px; }
+.gene { display: grid; grid-template-columns: 118px 1fr 44px; gap: 8px; align-items: center; font-size: 12px; padding: 2px 0; }
+.gene .track { height: 6px; background: var(--surface-2); border-radius: 1px; position: relative; }
+.gene .track i { position: absolute; left: 0; top: 0; bottom: 0; background: var(--fg); border-radius: 1px; }
+.gene .track b { position: absolute; top: -3px; bottom: -3px; width: 2px; background: var(--accent); }
+.gene span:last-child { font: 500 11px var(--mono); text-align: right; font-variant-numeric: tabular-nums; }
+table.spp { width: 100%; border-collapse: collapse; }
+table.spp td, table.spp th { padding: 5px 4px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+table.spp th { font: 500 10px var(--mono); letter-spacing: 0.06em; text-transform: uppercase; color: var(--fg-3); }
+table.spp td.n { font: 500 12px var(--mono); text-align: right; font-variant-numeric: tabular-nums; }
+table.spp tr[data-sp] { cursor: pointer; }
+table.spp tr[data-sp]:hover td { background: var(--surface-2); }
+table.spp em { font: italic 400 16px/1.15 var(--serif); }
+table.spp small { color: var(--fg-3); display: block; font-size: 11px; }
+.link { background: none; border: 0; padding: 0; color: var(--accent); cursor: pointer; font-weight: 600; text-decoration: underline; text-underline-offset: 2px; }
+.muted { color: var(--fg-3); }
+pre.code { font: 400 11.5px/1.5 var(--mono); background: var(--surface-2); border-radius: 6px; padding: 10px; overflow-x: auto; margin: 6px 0 12px; }
+ol.pipe { margin: 0; padding-left: 20px; font: 500 12px var(--mono); }
+.log { list-style: none; margin: 0; padding: 0; }
+.log li { display: grid; grid-template-columns: 74px 1fr; gap: 10px; padding: 5px 0; border-bottom: 1px solid var(--line); }
+.log time { font: 500 11px var(--mono); color: var(--fg-3); font-variant-numeric: tabular-nums; }
+.log li[data-sp] { cursor: pointer; }
+.log li[data-sp]:hover { background: var(--surface-2); }
+#tip { position: fixed; z-index: 20; pointer-events: none; background: var(--fg); color: var(--bg); padding: 6px 9px; border-radius: 5px; font-size: 12px; max-width: 260px; }
+#tip em { font: italic 400 16px var(--serif); }
+#tip small { display: block; font: 500 11px var(--mono); opacity: .8; }
+
+@media (max-width: 980px) {
+  html, body { height: auto; }
+  .app { height: auto; display: flex; flex-direction: column; }
+  .stage { display: flex; flex-direction: column; }
+  .world { aspect-ratio: 960 / 700; max-width: 100%; }
+  @media (max-width: 600px) { .world { aspect-ratio: 1 / 1.05; } }
+  .dock { height: 440px; }
+  .side { max-height: none; }
+  .side .scroll { height: auto; overflow: visible; }
+  .readout { margin-left: 0; }
+  .side .body { position: static; }
+}
+@media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto; } }
+</style>
+
+<div class="app">
+  <header class="bar">
+    <div class="brand"><h1>Strata</h1><span>artificial life engine</span></div>
+    <div class="transport">
+      <button class="btn primary" id="play">Pause</button>
+      <div class="seg" id="speed" role="group" aria-label="Simulation speed">
+        <button data-v="1">1×</button><button data-v="4">4×</button><button data-v="16">16×</button><button data-v="max" aria-pressed="true">Max</button>
+      </div>
+    </div>
+    <dl class="readout">
+      <div><dt>Year</dt><dd id="r-year">0</dd></div>
+      <div><dt>Generations</dt><dd id="r-gen">0</dd></div>
+      <div><dt>Organisms</dt><dd id="r-pop">0</dd></div>
+      <div><dt>Species</dt><dd id="r-spp">0</dd></div>
+      <div><dt>Ticks / s</dt><dd id="r-tps">0</dd></div>
+    </dl>
+  </header>
+
+  <main class="stage">
+    <section class="panel world" aria-label="World">
+      <canvas id="world"></canvas>
+      <div class="overlay tl">
+        <div class="seg small" id="tool" role="group" aria-label="Tool">
+          <button data-v="inspect" aria-pressed="true">Inspect</button><button data-v="raise">Raise land</button><button data-v="lower">Lower land</button>
+          <button data-v="enrich">Enrich soil</button><button data-v="deplete">Deplete soil</button><button data-v="impact">Impact</button><button data-v="seed">Seed</button>
+        </div>
+        <select id="founder" aria-label="Founder to seed" hidden></select>
+        <label class="brush" id="brushwrap" hidden>Brush <input type="range" id="brush" min="10" max="120" value="45"></label>
+      </div>
+      <div class="overlay bl">
+        <span class="legend" id="legend"></span>
+        <span style="display:flex;gap:6px;align-items:center">
+          <div class="seg small" id="layer" role="group" aria-label="Map layer">
+            <button data-v="terrain" aria-pressed="true">Terrain</button><button data-v="temp">Temperature</button><button data-v="soil">Nutrients</button><button data-v="light">Ground light</button>
+          </div>
+          <div class="seg small"><button id="zout" aria-label="Zoom out">−</button><button id="zfit">Fit</button><button id="zin" aria-label="Zoom in">+</button></div>
+        </span>
+      </div>
+    </section>
+
+    <section class="panel dock">
+      <div class="tabs" id="docktabs">
+        <button class="tab" data-v="phylo" aria-selected="true">Phylogeny</button>
+        <button class="tab" data-v="pop" aria-selected="false">Populations</button>
+        <button class="tab" data-v="traits" aria-selected="false">Trait space</button>
+        <button class="tab" data-v="log" aria-selected="false">Chronicle</button>
+        <div class="tools" id="tools-phylo">
+          <label>Show lineages peaking at <select id="ph-min"><option value="10">10+</option><option value="40" selected>40+</option><option value="150">150+</option></select></label>
+          <label><input type="checkbox" id="ph-extant"> Living lines only</label>
+          <div class="seg small" id="ph-color"><button data-v="pigment" aria-pressed="true">Pigment</button><button data-v="role">Diet</button></div>
+          <button class="btn small" id="ph-fit">Fit</button>
+        </div>
+        <div class="tools" id="tools-traits" hidden>
+          <label>X <select id="tr-x"></select></label><label>Y <select id="tr-y"></select></label>
+        </div>
+      </div>
+      <div class="body">
+        <canvas id="dockcv"></canvas>
+        <div class="scroll" id="logwrap" hidden><ul class="log" id="log"></ul></div>
+      </div>
+    </section>
+
+    <aside class="panel side">
+      <div class="tabs" id="sidetabs">
+        <button class="tab" data-v="env" aria-selected="true">Environment</button>
+        <button class="tab" data-v="inspect" aria-selected="false">Life</button>
+        <button class="tab" data-v="engine" aria-selected="false">Engine</button>
+      </div>
+      <div class="body">
+        <div class="scroll" id="p-env"></div>
+        <div class="scroll" id="p-inspect" hidden></div>
+        <div class="scroll" id="p-engine" hidden></div>
+      </div>
+    </aside>
+  </main>
+</div>
+<div id="tip" hidden></div>
+<script>
+/* Strata — artificial-life engine (DOM-free; runs in browser or node).
+ *
+ * Extension points
+ *   ALife.registerGene({key,label,group,min,max,log})   add a heritable trait (before creating a World)
+ *   ALife.registerDerive(fn(p))                          derive phenotype values from expressed genes
+ *   ALife.registerFounder(key, {label, genes, brain})    add a seedable founder organism
+ *   ALife.upkeepModifiers.push(fn(o, world) => mult)     scale an organism's metabolic cost
+ *   world.addSystem(name, fn(world), beforeName?)        insert a step into the tick pipeline
+ *   world.on(event, fn)                                  'birth' | 'death' | 'speciation' | 'extinction' | 'sample'
+ */
+(function (root) {
+'use strict';
+
+// ---------- utilities ----------
+function rng32(seed) {
+  let a = seed >>> 0;
+  return function () {
+    a = (a + 0x6D2B79F5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+const clamp = (v, a, b) => (v < a ? a : v > b ? b : v);
+
+// ---------- gene registry ----------
+const GENES = [];
+const G = {};
+const DERIVERS = [];
+const FOUNDERS = {};
+const upkeepModifiers = [];
+function registerGene(def) {
+  def.index = GENES.length; def.log = !!def.log;
+  GENES.push(def); G[def.key] = def.index; return def.index;
+}
+function registerDerive(fn) { DERIVERS.push(fn); }
+function registerFounder(key, def) { FOUNDERS[key] = def; }
+
+[ // appearance
+  { key: 'r', label: 'Pigment red', group: 'Appearance', min: 0, max: 1 },
+  { key: 'g', label: 'Pigment green', group: 'Appearance', min: 0, max: 1 },
+  { key: 'b', label: 'Pigment blue', group: 'Appearance', min: 0, max: 1 },
+  { key: 'lobes', label: 'Body lobes', group: 'Appearance', min: 3, max: 9 },
+  // body
+  { key: 'size', label: 'Adult mass', group: 'Body', min: 0.6, max: 60, log: true },
+  { key: 'height', label: 'Stature', group: 'Body', min: 0, max: 1 },
+  { key: 'armor', label: 'Armour', group: 'Body', min: 0, max: 1 },
+  { key: 'toxin', label: 'Toxicity', group: 'Body', min: 0, max: 1 },
+  // energy
+  { key: 'photo', label: 'Photosynthesis', group: 'Energy', min: 0, max: 1 },
+  { key: 'herb', label: 'Plant digestion', group: 'Energy', min: 0, max: 1 },
+  { key: 'carn', label: 'Flesh digestion', group: 'Energy', min: 0, max: 1 },
+  { key: 'topt', label: 'Thermal optimum °C', group: 'Energy', min: -15, max: 45 },
+  { key: 'ttol', label: 'Thermal tolerance', group: 'Energy', min: 4, max: 20 },
+  { key: 'aqua', label: 'Aquatic affinity', group: 'Energy', min: 0, max: 1 },
+  // locomotion + sensing
+  { key: 'speed', label: 'Locomotion', group: 'Locomotion', min: 0, max: 1 },
+  { key: 'sense', label: 'Sensor range', group: 'Sensing', min: 0, max: 1 },
+  // reproduction
+  { key: 'mature', label: 'Maturity reserve', group: 'Reproduction', min: 0.2, max: 1.5 },
+  { key: 'egg', label: 'Offspring investment', group: 'Reproduction', min: 0.08, max: 0.6 },
+  { key: 'clutch', label: 'Clutch size', group: 'Reproduction', min: 1, max: 6 },
+  { key: 'disperse', label: 'Dispersal', group: 'Reproduction', min: 0, max: 1 },
+  { key: 'sex', label: 'Outcrossing', group: 'Reproduction', min: 0, max: 1 },
+  { key: 'dorm', label: 'Resting offspring', group: 'Reproduction', min: 0, max: 1 },
+  { key: 'rest', label: 'Rest length (ticks)', group: 'Reproduction', min: 300, max: 20000, log: true },
+  { key: 'long', label: 'Longevity', group: 'Reproduction', min: 0.5, max: 2.5 },
+  { key: 'mut', label: 'Mutation rate', group: 'Reproduction', min: 0.01, max: 0.4, log: true },
+].forEach(registerGene);
+
+// ---------- brain layout ----------
+const NI = 23, NH = 8, NO = 3;
+const BRAIN_N = NI * NH + (NH + 1) * NO;
+const INPUT_LABELS = ['bias', 'energy', 'R side', 'G side', 'B side', 'R ahead', 'G ahead', 'B ahead',
+  'near side', 'near ahead', 'near dist', 'near size', 'near kin', 'habitat ahead', 'warmth ahead', 'noise', 'moving R side', 'moving G side', 'moving B side', 'digesting', 'stranger side', 'stranger dist', 'stranger size'];
+const OUTPUT_LABELS = ['turn', 'thrust', 'mouth'];
+
+// ---------- tuning constants ----------
+const C = {
+  W: 960, H: 608, FINE: 4, RES: 32, HASH: 24, YEAR: 2400, SLOW: 8,
+  UPKEEP: 0.0025, MOVE: 0.0008, SUPPORT: 0.0006, STEM: 0.008,
+  CELLGAIN: 0.26, LEAFK: 51, NMAX: 40, NREGEN: 0.008, NUSE: 0.6,
+  FLOOR: 0, WIRE: 0.3, BANK: 3000, EGGLIFE: 20000, MATE: 24, LEAF: 1.4, KEEP: 1, STARVE: 0.33, BITE: 0.25, REACH: 2.2, HANDLE: 3, DIGTIME: 10, DIGEST: 0.75, FLESH: 0.6, RICH: 1.2, HAZARD: 0.00015, LIFE: 400,
+};
+
+function toReal(def, v) {
+  return def.log ? def.min * Math.pow(def.max / def.min, v) : def.min + (def.max - def.min) * v;
+}
+function toNorm(def, real) {
+  return clamp(def.log ? Math.log(real / def.min) / Math.log(def.max / def.min) : (real - def.min) / (def.max - def.min), 0, 1);
+}
+
+function express(genome) {
+  const p = {};
+  for (let i = 0; i < GENES.length; i++) p[GENES[i].key] = toReal(GENES[i], genome[i]);
+  // diet allocation: specialists digest better than generalists
+  const root2 = 1 - p.speed; // roots vs legs
+  const ph = p.photo * root2 * root2;
+  const sum = p.photo + p.herb + p.carn + 1e-6;
+  p.photoEff = p.photo * ph / sum;
+  p.herbEff = p.herb * p.herb / sum;
+  p.carnEff = p.carn * p.carn / sum;
+  p.plantness = p.photoEff / (p.photoEff + p.herbEff + p.carnEff + 1e-6);
+  p.mobile = p.speed > 0.08;
+  p.biter = (p.herbEff + p.carnEff) > 0.12;
+  p.range = p.mobile ? (8 + p.sense * 48) * (0.6 + 0.29 * Math.cbrt(p.size)) : 0; // bigger eyes see further
+  p.eggB = p.egg * p.size;
+  p.life = C.LIFE * Math.pow(p.size, 0.25) * p.long;
+  p.costMult = 1 + C.LEAF * p.photo + 0.6 * p.armor + 0.6 * p.toxin + 0.3 * p.speed + (p.mobile ? 0.15 * p.sense : 0) + 0.5 * (p.ttol - 4) / 16 + 0.2 * (p.long - 1);
+  for (let i = 0; i < DERIVERS.length; i++) DERIVERS[i](p);
+  return p;
+}
+
+// ---------- founders ----------
+function brainPreset(chase, minus, flee, brake) {
+  // steer toward sensor input `chase` (minus input `minus`), away from input `flee`; -1 disables.
+  // inputs 2..4 are the red/green/blue side signals, 16..18 the same for moving bodies only
+  return function (w, rand) {
+    w.fill(0); // a clean controller: every other wire starts silent and mutation explores from there
+    const ih = (i, h) => h * NI + i, ho = (h, o) => NI * NH + o * (NH + 1) + h;
+    if (chase >= 0) { w[ih(chase, 0)] = 4; if (minus >= 0) w[ih(minus, 0)] = -4; w[ho(0, 0)] = 1.5; }
+    if (flee >= 0) { w[ih(flee, 1)] = 3; w[ho(1, 0)] = -1.2; }
+    w[ih(13, 2)] = 6; w[ho(2, 0)] = -1.5;       // turn away from bad habitat
+    w[ih(15, 3)] = 1; w[ho(3, 0)] = 0.5;        // wander
+    w[ih(12, 4)] = 10; w[ih(0, 4)] = -4; w[ho(4, 2)] = -1.5; w[ho(NH, 2)] = 0.5; // do not bite kin
+    w[ih(1, 5)] = 2; w[ih(0, 5)] = -1; w[ho(5, 1)] = -1;                         // ease off when full
+    w[ho(NH, 1)] = 1;
+    if (brake) { w[ih(19, 6)] = 6; w[ih(0, 6)] = -3; w[ho(6, 1)] = -2.5; w[ho(NH, 1)] = -1.5; } // stay put while digesting, so the next bite is in reach
+  };
+}
+function hunterBrain(w, rand) { // pursue anything that moves and is not coloured like its own kind
+  brainPreset(-1, -1, -1, false)(w, rand);
+  const ih = (i, h) => h * NI + i, ho = (h, o) => NI * NH + o * (NH + 1) + h;
+  w[ih(20, 0)] = 6; w[ho(0, 0)] = 1.5;                      // turn toward the nearest moving stranger
+  w[ih(21, 7)] = 6; w[ho(7, 1)] = 1.5; w[ho(NH, 1)] = 0;      // cruise, and sprint when one is in view
+}
+registerFounder('plant', { label: 'Ground plant', habitat: 'land',
+  genes: { r: .2, g: .75, b: .25, lobes: 5, size: 5, height: .45, armor: 0, toxin: 0, photo: 1, herb: 0, carn: 0, topt: 18, ttol: 10, aqua: 0, speed: 0, sense: 0, mature: .6, egg: .15, clutch: 2, disperse: .4, sex: 0.5, dorm: 0.15, rest: 2000, long: 1, mut: .08 } });
+registerFounder('alga', { label: 'Alga', habitat: 'water',
+  genes: { r: .15, g: .6, b: .5, lobes: 7, size: 1.5, height: .1, armor: 0, toxin: 0, photo: 1, herb: 0, carn: 0, topt: 16, ttol: 10, aqua: 1, speed: 0, sense: 0, mature: .6, egg: .2, clutch: 2, disperse: .5, sex: 0.5, dorm: 0.15, rest: 2000, long: 1, mut: .08 } });
+registerFounder('grazer', { label: 'Grazer', habitat: 'land', brain: brainPreset(3, 4, 16, true),
+  genes: { r: .25, g: .4, b: .9, lobes: 4, size: 3, height: 0, armor: 0, toxin: 0, photo: 0, herb: 1, carn: 0, topt: 18, ttol: 11, aqua: 0, speed: .5, sense: .5, mature: .7, egg: .3, clutch: 1, disperse: .3, sex: 0.5, dorm: 0.3, rest: 4000, long: 1.3, mut: .08 } });
+registerFounder('hunter', { label: 'Hunter', habitat: 'land', brain: hunterBrain,
+  genes: { r: .9, g: .25, b: .2, lobes: 3, size: 1.5, height: 0, armor: 0, toxin: 0, photo: 0, herb: 0, carn: 1, topt: 18, ttol: 11, aqua: 0, speed: .65, sense: .8, mature: .5, egg: .5, clutch: 1, disperse: .3, sex: 0.5, dorm: 0.4, rest: 6000, long: 2.2, mut: .05 } });
+registerFounder('proto', { label: 'Proto-cell', habitat: 'water', brain: brainPreset(3, 4, -1, true),
+  genes: { r: .5, g: .6, b: .45, lobes: 6, size: 1.2, height: .05, armor: 0, toxin: 0, photo: .8, herb: .15, carn: .1, topt: 16, ttol: 12, aqua: .85, speed: .04, sense: .3, mature: .5, egg: .3, clutch: 2, disperse: .5, sex: 0.2, dorm: 0.2, rest: 2000, long: 1, mut: .12 } });
+
+// ---------- names ----------
+const SYL_A = ['Ar', 'Bel', 'Cor', 'Dra', 'El', 'Fen', 'Gal', 'Hel', 'Ix', 'Kal', 'Lum', 'Mor', 'Nym', 'Or', 'Pel', 'Quil', 'Rha', 'Syl', 'Tor', 'Ul', 'Vex', 'Xan', 'Zor', 'Thal', 'Myr', 'Cry', 'Ost', 'Phy'];
+const SYL_B = ['a', 'o', 'i', 'e', 'u', 'ae', 'io', 'ya'];
+const SYL_C = ['don', 'pus', 'tera', 'morpha', 'saurus', 'phyta', 'cera', 'nax', 'lia', 'thrix', 'derma', 'zoa', 'plax', 'myces', 'gnath', 'soma', 'cys', 'ptera'];
+const EPI = ['vagans', 'minor', 'major', 'ferox', 'placidus', 'obscurus', 'viridis', 'ruber', 'altus', 'nanus', 'velox', 'tardus', 'armatus', 'toxicus', 'borealis', 'australis', 'marinus', 'aridus', 'gracilis', 'robustus', 'lucens', 'umbrosus', 'socialis', 'solitarius', 'vorax', 'pallidus', 'niger', 'aureus', 'profundus', 'litoralis', 'montanus', 'errans'];
+function pick(a, rand) { return a[(rand() * a.length) | 0]; }
+function genus(rand) { return pick(SYL_A, rand) + pick(SYL_B, rand) + pick(SYL_C, rand); }
+
+// ---------- World ----------
+function World(opts) {
+  opts = opts || {};
+  this.seed = (opts.seed == null ? 1 : opts.seed) >>> 0;
+  this.rand = rng32(this.seed * 7919 + 13);
+  this.W = C.W; this.H = C.H;
+  this.gw = C.W / C.FINE; this.gh = C.H / C.FINE;
+  this.rw = C.W / C.RES; this.rh = C.H / C.RES;
+  this.hw = Math.ceil(C.W / C.HASH); this.hh = Math.ceil(C.H / C.HASH);
+  this.nG = GENES.length; this.nGenome = this.nG + BRAIN_N;
+  this.P = Object.assign({
+    gravity: 1, temperature: 15, seasonality: 0.3, rainfall: 1, sunlight: 1, fertility: 1,
+    mutationRate: 1, mutationSize: 1, seaLevel: 0.42, maxPop: 4000, speciation: 0.17, immigration: 0,
+  }, opts.params || {});
+  this.preset = opts.preset || 'continents';
+  this.elev = new Float32Array(this.gw * this.gh);
+  this.N = new Float32Array(this.rw * this.rh);
+  this.cap = new Float32Array(this.rw * this.rh);
+  this.fert = new Float32Array(this.rw * this.rh).fill(1);
+  this.cellWater = new Uint8Array(this.rw * this.rh);
+  this.cellDepth = new Float32Array(this.rw * this.rh);
+  this.cellLight = new Float32Array(this.rw * this.rh);
+  this.cellGround = new Float32Array(this.rw * this.rh).fill(1);
+  this.head = new Int32Array(this.hw * this.hh);
+  this.mhead = new Int32Array(this.hw * this.hh);
+  this.agg = new Float32Array(this.hw * this.hh * 6);
+  this.nMobile = 0; this.nSessile = 0;
+  this.fame = { grazer: [], hunter: [] };
+  this.banks = [[], []]; this.rested = 0;
+  this.next = new Int32Array(1024);
+  this.rhead = new Int32Array(this.rw * this.rh);
+  this.rnext = new Int32Array(1024);
+  this.orgs = [];
+  this.tick = 0; this.nextId = 1; this.nextSp = 1;
+  this.species = new Map();
+  this.events = [];
+  this.history = [];
+  this.schedule = [];
+  this.listeners = {};
+  this.deaths = { starved: 0, eaten: 0, old: 0, hazard: 0 };
+  this.births = 0; this.sexual = 0; this.maxGen = 0; this.season = 0;
+  this.terrainVersion = 0;
+  this.systems = [
+    { name: 'schedule', fn: sysSchedule },
+    { name: 'immigration', fn: sysImmigration },
+    { name: 'hatching', fn: sysHatching },
+    { name: 'environment', fn: sysEnvironment },
+    { name: 'index', fn: sysIndex },
+    { name: 'canopy', fn: sysCanopy },
+    { name: 'behaviour', fn: sysBehaviour },
+    { name: 'metabolism', fn: sysMetabolism },
+    { name: 'sweep', fn: sysSweep },
+    { name: 'census', fn: sysCensus },
+  ];
+  this.generateTerrain(this.preset, this.seed);
+  for (let i = 0; i < this.N.length; i++) this.N[i] = this.cap[i] * C.NMAX;
+  this.populate(opts.start || 'ecosystem');
+}
+const WP = World.prototype;
+
+WP.on = function (ev, fn) { (this.listeners[ev] = this.listeners[ev] || []).push(fn); };
+WP.emit = function (ev, a, b, c) { const l = this.listeners[ev]; if (l) for (let i = 0; i < l.length; i++) l[i](a, b, c); };
+WP.addSystem = function (name, fn, before) {
+  const i = before ? this.systems.findIndex(s => s.name === before) : -1;
+  if (i >= 0) this.systems.splice(i, 0, { name, fn }); else this.systems.push({ name, fn });
+};
+WP.log = function (type, text, sp) {
+  this.events.push({ t: this.tick, type, text, sp: sp ? sp.id : 0 });
+  if (this.events.length > 400) this.events.splice(0, 100);
+};
+
+// ----- terrain -----
+WP.generateTerrain = function (preset, seed) {
+  this.preset = preset;
+  const gw = this.gw, gh = this.gh, r = rng32(seed * 2654435761 + 99);
+  const L = 64, lat = new Float32Array(L * L);
+  for (let i = 0; i < L * L; i++) lat[i] = r();
+  const vn = (x, y) => {
+    const xi = Math.floor(x), yi = Math.floor(y), fx = x - xi, fy = y - yi;
+    const sx = fx * fx * (3 - 2 * fx), sy = fy * fy * (3 - 2 * fy);
+    const a = lat[(yi & 63) * L + (xi & 63)], b = lat[(yi & 63) * L + ((xi + 1) & 63)];
+    const c = lat[((yi + 1) & 63) * L + (xi & 63)], d = lat[((yi + 1) & 63) * L + ((xi + 1) & 63)];
+    return a + (b - a) * sx + (c - a) * sy + (a - b - c + d) * sx * sy;
+  };
+  const fbm = (x, y, f) => {
+    let s = 0, a = 0.5, n = 0;
+    for (let o = 0; o < 5; o++) { s += a * vn(x * f, y * f); n += a; a *= 0.5; f *= 2; }
+    return s / n;
+  };
+  for (let y = 0; y < gh; y++) for (let x = 0; x < gw; x++) {
+    const u = x / gw, v = y / gh, dx = u - 0.5, dy = v - 0.5;
+    const edge = Math.min(u, 1 - u, v, 1 - v);
+    const n = fbm(x, y, 0.035), n2 = fbm(x + 300, y + 170, 0.09);
+    let e;
+    if (preset === 'pangaea') {
+      e = 0.78 - Math.sqrt(dx * dx * 1.1 + dy * dy * 1.6) * 1.25 + (n - 0.5) * 0.45;
+    } else if (preset === 'archipelago') {
+      e = 0.12 + n2 * 0.38 + n * 0.22;
+    } else if (preset === 'twin') {
+      const strait = Math.abs(dx + (n2 - 0.5) * 0.12);
+      e = 0.3 + n * 0.5 - Math.max(0, 0.09 - strait) * 3.2;
+    } else if (preset === 'ridge') {
+      const ridge = Math.max(0, 0.1 - Math.abs(dx + (n2 - 0.5) * 0.2)) * 4.5;
+      e = 0.36 + n * 0.3 + ridge;
+    } else if (preset === 'ocean') {
+      e = 0.02 + n * 0.3 + n2 * 0.28;
+    } else { // continents
+      e = 0.18 + n * 0.62 + (n2 - 0.5) * 0.12;
+    }
+    e -= Math.max(0, 0.1 - edge) * 3;
+    this.elev[y * gw + x] = clamp(e, 0, 1);
+  }
+  this.rebuildEnv();
+};
+
+WP.rebuildEnv = function () {
+  const { rw, rh, gw } = this, sea = this.P.seaLevel, k = C.RES / C.FINE;
+  const dist = new Int16Array(rw * rh).fill(-1), q = [];
+  const meanE = new Float32Array(rw * rh);
+  for (let cy = 0; cy < rh; cy++) for (let cx = 0; cx < rw; cx++) {
+    let s = 0, wcount = 0;
+    for (let j = 0; j < k; j++) for (let i = 0; i < k; i++) {
+      const e = this.elev[(cy * k + j) * gw + cx * k + i]; s += e; if (e < sea) wcount++;
+    }
+    const c = cy * rw + cx; meanE[c] = s / (k * k);
+    this.cellWater[c] = wcount * 2 >= k * k ? 1 : 0;
+    this.cellDepth[c] = Math.max(0, sea - meanE[c]);
+    if (wcount > 0) { dist[c] = 0; q.push(c); }
+  }
+  for (let qi = 0; qi < q.length; qi++) {
+    const c = q[qi], cx = c % rw, cy = (c / rw) | 0, d = dist[c] + 1;
+    if (cx > 0 && dist[c - 1] < 0) { dist[c - 1] = d; q.push(c - 1); }
+    if (cx < rw - 1 && dist[c + 1] < 0) { dist[c + 1] = d; q.push(c + 1); }
+    if (cy > 0 && dist[c - rw] < 0) { dist[c - rw] = d; q.push(c - rw); }
+    if (cy < rh - 1 && dist[c + rw] < 0) { dist[c + rw] = d; q.push(c + rw); }
+  }
+  const P = this.P;
+  for (let c = 0; c < rw * rh; c++) {
+    let cap;
+    if (this.cellWater[c]) cap = clamp(1 - this.cellDepth[c] * 3.2, 0.15, 1);
+    else {
+      const d = dist[c] < 0 ? 30 : dist[c];
+      const moist = clamp(P.rainfall * (1.25 - d * 0.1), 0.04, 1.3);
+      cap = moist * (1 - clamp((meanE[c] - sea - 0.22) * 3, 0, 0.85));
+    }
+    this.cap[c] = cap * P.fertility * this.fert[c];
+  }
+  this.terrainVersion++;
+};
+
+WP.elevAt = function (x, y) {
+  const gx = clamp((x / C.FINE) | 0, 0, this.gw - 1), gy = clamp((y / C.FINE) | 0, 0, this.gh - 1);
+  return this.elev[gy * this.gw + gx];
+};
+WP.tempAt = function (x, y) {
+  const lat = (y / this.H - 0.5) * 2, al = Math.abs(lat), e = this.elevAt(x, y), sea = this.P.seaLevel;
+  const land = e >= sea;
+  return this.P.temperature + 14 - 30 * Math.pow(al, 1.3) - (land ? (e - sea) * 45 : 0)
+    + this.P.seasonality * 14 * this.season * lat * (land ? 1 : 0.4);
+};
+WP.lightAtCell = function (c) {
+  const cy = (c / this.rw) | 0, lat = ((cy + 0.5) / this.rh - 0.5) * 2;
+  let l = this.P.sunlight * (1 - 0.45 * Math.abs(lat)) * (1 + this.P.seasonality * 0.6 * this.season * lat);
+  if (this.cellWater[c]) l *= Math.exp(-this.cellDepth[c] * 5);
+  return l < 0.02 ? 0.02 : l;
+};
+
+WP.paintTerrain = function (x, y, radius, delta) {
+  const gw = this.gw, gh = this.gh, r = radius / C.FINE, gx = x / C.FINE, gy = y / C.FINE;
+  for (let j = Math.max(0, Math.floor(gy - r)); j <= Math.min(gh - 1, Math.ceil(gy + r)); j++)
+    for (let i = Math.max(0, Math.floor(gx - r)); i <= Math.min(gw - 1, Math.ceil(gx + r)); i++) {
+      const d = Math.hypot(i - gx, j - gy) / r;
+      if (d < 1) this.elev[j * gw + i] = clamp(this.elev[j * gw + i] + delta * (1 - d * d), 0, 1);
+    }
+  this.rebuildEnv();
+};
+WP.paintFertility = function (x, y, radius, factor) {
+  const r = radius / C.RES, cx0 = x / C.RES, cy0 = y / C.RES;
+  for (let j = Math.max(0, Math.floor(cy0 - r)); j <= Math.min(this.rh - 1, Math.ceil(cy0 + r)); j++)
+    for (let i = Math.max(0, Math.floor(cx0 - r)); i <= Math.min(this.rw - 1, Math.ceil(cx0 + r)); i++)
+      if (Math.hypot(i + 0.5 - cx0, j + 0.5 - cy0) < r + 0.5) {
+        const c = j * this.rw + i; this.fert[c] = clamp(this.fert[c] * factor, 0.05, 4);
+      }
+  this.rebuildEnv();
+};
+WP.meteor = function (x, y, radius) {
+  let killed = 0;
+  for (const o of this.orgs) if (o.alive && Math.hypot(o.x - x, o.y - y) < radius * (0.8 + this.rand() * 0.6)) { this.kill(o, 'hazard'); killed++; }
+  this.paintTerrain(x, y, radius * 0.6, -0.12);
+  this.log('user', 'Impact at ' + (x | 0) + ',' + (y | 0) + ' killed ' + killed);
+  return killed;
+};
+WP.setParam = function (key, v) {
+  this.P[key] = v;
+  if (key === 'seaLevel' || key === 'rainfall' || key === 'fertility') this.rebuildEnv();
+};
+
+// ----- genomes, organisms, species -----
+WP.makeGenome = function (founderKey) {
+  const f = FOUNDERS[founderKey], g = new Float32Array(this.nGenome);
+  for (let i = 0; i < this.nG; i++) {
+    const def = GENES[i], v = f.genes[def.key];
+    g[i] = v == null ? 0.5 : toNorm(def, v);
+  }
+  const w = new Float32Array(BRAIN_N);
+  if (f.brain) f.brain(w, this.rand); else for (let i = 0; i < BRAIN_N; i++) w[i] = (this.rand() - 0.5) * 0.2;
+  g.set(w, this.nG);
+  return g;
+};
+WP.newSpecies = function (genome, parent) {
+  const rand = this.rand;
+  const sp = {
+    id: this.nextSp++, parent: parent ? parent.id : 0, born: this.tick, died: -1,
+    type: genome.slice(), n: 0, bank: 0, peak: 0, hist: [], mean: genome.slice(), role: '', tags: [],
+    genus: '', clan: 0, clanType: null, epithet: pick(EPI, rand),
+    col: [genome[G.r], genome[G.g], genome[G.b]], gen: 0, logged: false,
+    intake: [0, 0, 0, 0],
+  };
+  // a genus is a clan: descendants stay in it until they have drifted well away from the genome that founded it
+  if (parent && this.distance(genome, parent.clanType) < 2.5 * this.P.speciation) { sp.clan = parent.clan; sp.clanType = parent.clanType; sp.genus = parent.genus; }
+  else { sp.clan = sp.id; sp.clanType = sp.type; sp.genus = genus(rand); }
+  sp.name = sp.genus + ' ' + sp.epithet;
+  this.species.set(sp.id, sp);
+  return sp;
+};
+WP.spawn = function (genome, x, y, B, sp, gen, parentId) {
+  const p = express(genome);
+  const o = {
+    id: this.nextId++, x, y, h: this.rand() * 6.283, B: B == null ? p.eggB : B, age: 0, gen: gen || 0,
+    sp, genome, p, alive: true, gain: 0, therm: 1, hab: 1, rad: 1, peak: 0, thrust: 0, mouth: 0,
+    inPhoto: 0, inPlant: 0, inMeat: 0, inKin: 0, kids: 0, parentId: parentId || 0,
+    life: p.life * (0.8 + this.rand() * 0.4), water: false, _h: 0, _st: 0, _thA: 1, css: null, cool: 0, cover: 1, turn: 0, gut: p.size <= 1 ? 1 : Math.min(1.4, Math.pow(p.size, 0.2)), reach: 1.15 * Math.cbrt(p.size) * C.REACH,
+    // hot phenotype values, flattened for speed
+    size: p.size, mobile: p.mobile, biter: p.biter, range: p.range, photoEff: p.photoEff, herbEff: p.herbEff,
+    carnEff: p.carnEff, plantness: p.plantness, armor: p.armor, toxin: p.toxin, speed: p.speed, height: p.height,
+    aqua: p.aqua, topt: p.topt, ttol: p.ttol, full: p.size * (1 + p.mature), costMult: p.costMult,
+    floor: p.mobile ? C.FLOOR : 0, // nerves and muscle carry a running cost that does not shrink with the body
+    upA: C.UPKEEP * (Math.pow(p.size, 0.75) + (p.mobile ? C.FLOOR : 0)) * p.costMult, supA: C.SUPPORT * Math.pow(p.size, 1.2) + C.STEM * p.height * p.height * p.size,
+  };
+  this.refresh(o);
+  sp.n++; if (sp.n > sp.peak) sp.peak = sp.n;
+  if (o.gen > this.maxGen) this.maxGen = o.gen;
+  if (o.gen > sp.gen) sp.gen = o.gen;
+  this.orgs.push(o);
+  return o;
+};
+WP.refresh = function (o) { // slow-changing state
+  const st = o.B < o.size ? o.B : o.size;
+  o.rad = 1.15 * Math.cbrt(st);
+  const e = this.elevAt(o.x, o.y);
+  o.water = e < this.P.seaLevel;
+  o.hab = o.water ? o.aqua : 1 - o.aqua;
+  const d = (this.tempAt(o.x, o.y) - o.topt) / o.ttol;
+  o.therm = Math.exp(-d * d);
+  if (o.mobile) o.cover = 0.2 + 0.8 * this.cellGround[((o.y / C.RES) | 0) * this.rw + ((o.x / C.RES) | 0)]; // animals under canopy are hard to see
+};
+WP.kill = function (o, cause, by) {
+  if (!o.alive) return;
+  o.alive = false; this.deaths[cause]++;
+  const c = clamp((o.y / C.RES) | 0, 0, this.rh - 1) * this.rw + clamp((o.x / C.RES) | 0, 0, this.rw - 1);
+  if (o.B > 0) this.N[c] = Math.min(C.NMAX * 2.5, this.N[c] + o.B * 0.5);
+  const sp = o.sp; sp.n--;
+  if (o.mobile && o.kids > 1) { // remember the most prolific animals: later colonists descend from them
+    const f = o.carnEff > 0.3 ? this.fame.hunter : o.herbEff > 0.3 ? this.fame.grazer : null;
+    if (f) {
+      for (const e of f) e.score *= 0.985;
+      if (f.length < 16) f.push({ score: o.kids, genome: o.genome });
+      else { let lo = 0; for (let i = 1; i < 16; i++) if (f[i].score < f[lo].score) lo = i; if (f[lo].score < o.kids) f[lo] = { score: o.kids, genome: o.genome }; }
+    }
+  }
+  this.emit('death', o, cause, by);
+  if (sp.n === 0) this.checkExtinct(sp);
+};
+WP.checkExtinct = function (sp) { // a species with resting eggs or seeds in the ground is dormant, not gone
+  if (sp.n > 0 || sp.bank > 0 || sp.died >= 0) return;
+  sp.died = this.tick;
+  if (sp.peak >= 25) this.log('extinct', sp.name + ' went extinct (peak ' + sp.peak + ')', sp);
+  this.emit('extinction', sp);
+};
+WP.layResting = function (genome, x, y, sp, gen, pid, rest) {
+  const dur = Math.min(60000, 100 - Math.log(1 - this.rand() * 0.999) * rest);
+  if (this.rand() > Math.exp(-dur / C.EGGLIFE)) return; // the longer it waits, the likelier it rots
+  // rooted and motile life keep separate banks, so seeds cannot bury the eggs
+  const bank = this.banks[genome[G.speed] > 0.08 ? 1 : 0], e = { t: this.tick + (dur | 0), genome, x, y, sp, gen, pid };
+  if (bank.length < C.BANK) bank.push(e);
+  else { // a full bank loses an egg of whichever species has the most resting there, so rare lineages keep theirs
+    let i = (this.rand() * bank.length) | 0;
+    for (let k = 0; k < 8; k++) { const j = (this.rand() * bank.length) | 0; if (bank[j].sp.bank > bank[i].sp.bank) i = j; }
+    const old = bank[i].sp; bank[i] = e; old.bank--; this.checkExtinct(old);
+  }
+  sp.bank++; this.rested++;
+};
+WP.distance = function (a, b) {
+  let s = 0; const nG = this.nG;
+  for (let i = 0; i < nG; i++) { const d = a[i] - b[i]; s += d * d; }
+  let sb = 0;
+  for (let i = nG; i < a.length; i++) { const d = a[i] - b[i]; sb += d * d; }
+  return Math.sqrt(s / nG) + 0.04 * Math.sqrt(sb / BRAIN_N);
+};
+WP.assignSpecies = function (genome, parentSp) {
+  const th = this.P.speciation;
+  if (this.distance(genome, parentSp.mean) <= th) return parentSp;
+  let best = null, bd = th * 0.7;
+  for (const s of this.species.values()) {
+    if (s.parent !== parentSp.id || s.n === 0) continue;
+    const d = this.distance(genome, s.mean);
+    if (d < bd) { bd = d; best = s; }
+  }
+  if (best) return best;
+  const sp = this.newSpecies(genome, parentSp);
+  this.emit('speciation', sp, parentSp);
+  return sp;
+};
+
+function gauss(rand) { return (rand() + rand() + rand() + rand() - 2) * 1.732; }
+WP.mutate = function (src, rate) {
+  const g = src.slice(), rand = this.rand, P = this.P, nG = this.nG;
+  const mu = rate * P.mutationRate, sd = 0.06 * P.mutationSize;
+  for (let i = 0; i < nG; i++) if (rand() < mu) {
+    g[i] = clamp(g[i] + gauss(rand) * sd * (rand() < 0.06 ? 4 : 1), 0, 1);
+  }
+  const m = BRAIN_N * mu * C.WIRE; let k = Math.floor(m); // wiring is a large target, so each weight mutates less often than a trait if (rand() < m - k) k++;
+  for (; k > 0; k--) {
+    const i = nG + ((rand() * BRAIN_N) | 0);
+    g[i] = clamp(g[i] + gauss(rand) * 0.2 * P.mutationSize * (rand() < 0.06 ? 4 : 1), -5, 5);
+  }
+  return g;
+};
+WP.recombine = function (a, b) { // uniform crossover on traits; neural wiring is inherited one neuron at a time
+  const g = a.slice(), rand = this.rand, nG = this.nG;
+  for (let i = 0; i < nG; i++) if (rand() < 0.5) g[i] = b[i];
+  for (let h = 0; h < NH; h++) if (rand() < 0.5) { const o0 = nG + h * NI; for (let i = 0; i < NI; i++) g[o0 + i] = b[o0 + i]; }
+  for (let o = 0; o < NO; o++) if (rand() < 0.5) { const o0 = nG + NI * NH + o * (NH + 1); for (let i = 0; i <= NH; i++) g[o0 + i] = b[o0 + i]; }
+  return g;
+};
+WP.findMate = function (o) { // nearest mature member of the same species within pollen / courtship range
+  const hw = this.hw, hh = this.hh, orgs = this.orgs, next = this.next, list = o.mobile ? this.mhead : this.head;
+  const cx = (o.x / C.HASH) | 0, cy = (o.y / C.HASH) | 0;
+  let best = null, bd = C.MATE * C.MATE;
+  for (let y = Math.max(0, cy - 1); y <= Math.min(hh - 1, cy + 1); y++) for (let x = Math.max(0, cx - 1); x <= Math.min(hw - 1, cx + 1); x++)
+    for (let j = list[y * hw + x]; j >= 0; j = next[j]) {
+      const t = orgs[j];
+      if (!t || t === o || !t.alive || t.sp !== o.sp || t.B < t.size * 0.6) continue;
+      const dx = t.x - o.x, dy = t.y - o.y, d2 = dx * dx + dy * dy;
+      if (d2 < bd) { bd = d2; best = t; }
+    }
+  return best;
+};
+
+WP.seedFounder = function (key, n, x, y, spread, opts) {
+  const f = FOUNDERS[key]; if (!f) return null;
+  const vary = opts && opts.vary, genome = (opts && opts.genome) || this.makeGenome(key), sp = this.newSpecies(genome, null);
+  let placed = 0;
+  for (let tries = 0; tries < n * 40 && placed < n; tries++) {
+    let px, py;
+    if (x == null) { px = this.rand() * this.W; py = this.H * (0.15 + this.rand() * 0.7); }
+    else { const a = this.rand() * 6.283, d = Math.sqrt(this.rand()) * (spread || 40); px = clamp(x + Math.cos(a) * d, 1, this.W - 1); py = clamp(y + Math.sin(a) * d, 1, this.H - 1); }
+    const water = this.elevAt(px, py) < this.P.seaLevel;
+    if (x == null && water !== (f.habitat === 'water')) continue;
+    if (x == null && f.habitat === 'water' && this.P.seaLevel - this.elevAt(px, py) > 0.12) continue;
+    const o = this.spawn(this.mutate(genome, vary || 0.05), px, py, toReal(GENES[G.size], genome[G.size]) * 0.8, sp, 0, 0);
+    o.age = (this.rand() * 200) | 0; placed++;
+  }
+  if (placed === 0) { this.species.delete(sp.id); return null; }
+  sp.logged = true;
+  this.log('founder', f.label + ' introduced as ' + sp.name + ' (' + placed + ')', sp);
+  return sp;
+};
+WP.seedAt = function (key, n, pred, opts) { // found a local colony beside one organism matching pred
+  const c = this.orgs.filter(o => o.alive && pred(o));
+  if (!c.length) return this.seedFounder(key, n, null, null, null, opts);
+  const t = c[(this.rand() * c.length) | 0];
+  return this.seedFounder(key, n, t.x, t.y, 45, opts);
+};
+WP.seedScatter = function (key, n, pred, opts) { // one founder species, each individual dropped beside a different matching organism
+  const c = this.orgs.filter(o => o.alive && pred(o));
+  if (!c.length) return this.seedFounder(key, n, null, null, null, opts);
+  const vary = opts && opts.vary, genome = (opts && opts.genome) || this.makeGenome(key), sp = this.newSpecies(genome, null), size = toReal(GENES[G.size], genome[G.size]);
+  for (let i = 0; i < n; i++) {
+    const t = c[(this.rand() * c.length) | 0], a = this.rand() * 6.283;
+    this.spawn(this.mutate(genome, vary || 0.05), clamp(t.x + Math.cos(a) * 25, 1, this.W - 1), clamp(t.y + Math.sin(a) * 25, 1, this.H - 1), size, sp, 0, 0);
+  }
+  sp.logged = true;
+  this.log('founder', FOUNDERS[key].label + ' introduced as ' + sp.name + ' (' + n + ')', sp);
+  return sp;
+};
+WP.populate = function (start) {
+  this.start = start;
+  if (start === 'proto') { this.seedFounder('proto', 400); return; }
+  this.seedFounder('plant', 700); this.seedFounder('alga', 500);
+  const land = o => !o.mobile && !o.water, prey = o => o.mobile && o.herbEff > 0.3;
+  this.schedule.push({ t: 500, fn: w => { for (let i = 0; i < 8; i++) w.seedAt('grazer', 15, land); } });
+  let releases = 0;
+  const hunters = w => { // hunters are released once there is a prey base, and again (up to four times) if a release fails to take hold
+    let n = 0, h = 0; for (const o of w.orgs) if (o.alive && o.mobile) { if (o.carnEff > 0.3) h++; else if (o.herbEff > 0.3) n++; }
+    if (h >= 4) { w.schedule.push({ t: w.tick + 5000, fn: hunters }); return; }
+    if (releases >= 4) return;
+    if (n >= 250 || (releases === 0 && w.tick >= 40000)) { releases++; w.seedScatter('hunter', 24, prey); w.schedule.push({ t: w.tick + 5000, fn: hunters }); }
+    else w.schedule.push({ t: w.tick + 1500, fn: hunters });
+  };
+  this.schedule.push({ t: 6000, fn: hunters });
+};
+
+// ----- systems -----
+function sysSchedule(w) {
+  const s = w.schedule;
+  for (let i = s.length - 1; i >= 0; i--) if (s[i].t <= w.tick) { const e = s[i]; s.splice(i, 1); e.fn(w); }
+}
+function sysImmigration(w) {
+  // Optional rescue (off by default): when a whole feeding guild is missing, a few colonists drift in from off the map,
+  // half from the guild's most prolific past animals and half from founder stock.
+  const rate = w.P.immigration;
+  if (w.start !== 'ecosystem' || rate <= 0 || w.tick < 3000 || w.tick % Math.round(1500 / rate)) return;
+  let graz = 0, hunt = 0, flora = 0, algae = 0;
+  for (const o of w.orgs) {
+    if (!o.alive) continue;
+    if (o.mobile) { if (o.carnEff > 0.3) hunt++; else if (o.herbEff > 0.3) graz++; }
+    else if (o.photoEff > 0.3 && o.hab > 0.5) { if (o.water) algae++; else flora++; }
+  }
+  const pool = k => { const f = w.fame[k]; return { vary: 0.2, genome: f.length && w.rand() < 0.5 ? f[(w.rand() * f.length) | 0].genome : null }; };
+  if (flora < 40) w.seedFounder('plant', 150, null, null, null, { vary: 0.25 });
+  else if (algae < 40) w.seedFounder('alga', 150, null, null, null, { vary: 0.25 });
+  else if (graz < 10) for (let i = 0; i < 4; i++) w.seedAt('grazer', 15, o => !o.mobile && !o.water, pool('grazer'));
+  else if (hunt < 4 && graz >= 150 && w.tick >= 6000) w.seedScatter('hunter', 12, o => o.mobile && o.herbEff > 0.3, pool('hunter'));
+}
+function sysHatching(w) { // resting eggs and seeds wake where they were laid
+  if (w.tick % 16) return;
+  const now = w.tick, capS = w.P.maxPop * 0.7 * 1.1, capM = w.P.maxPop * 0.3 * 1.1;
+  for (let b = 0; b < 2; b++) for (let bank = w.banks[b], mobile = b === 1, i = bank.length - 1; i >= 0; i--) {
+    const e = bank[i];
+    if (e.t > now) continue;
+    if ((mobile ? w.nMobile > capM : w.nSessile > capS) && e.sp.n > w.P.maxPop * 0.02) { e.t = now + 400; continue; } // no room yet
+    bank[i] = bank[bank.length - 1]; bank.pop();
+    const sp = e.sp; sp.bank--;
+    if (sp.died >= 0) { sp.died = -1; if (sp.peak >= 25) w.log('species', sp.name + ' re-emerged from resting ' + (mobile ? 'eggs' : 'seeds'), sp); }
+    const child = w.spawn(e.genome, e.x, e.y, null, sp, e.gen, e.pid);
+    w.births++; w.emit('birth', child, null);
+  }
+}
+function sysEnvironment(w) {
+  w.season = Math.sin(w.tick / C.YEAR * 6.2832);
+  if (w.tick % 8) return;
+  const N = w.N, cap = w.cap, k = C.NREGEN * 8;
+  for (let c = 0; c < N.length; c++) N[c] += (cap[c] * C.NMAX - N[c]) * k;
+}
+function sysIndex(w) {
+  if (w.tick & 1) return;
+  const orgs = w.orgs, n = orgs.length;
+  if (w.next.length < n) { w.next = new Int32Array(n * 2); w.rnext = new Int32Array(n * 2); }
+  const head = w.head, mhead = w.mhead, agg = w.agg, next = w.next, hw = w.hw;
+  head.fill(-1); mhead.fill(-1); agg.fill(0);
+  let nm = 0, ns = 0;
+  for (let i = 0; i < n; i++) {
+    const o = orgs[i];
+    if (!o.alive) continue;
+    const c = ((o.y / C.HASH) | 0) * hw + ((o.x / C.HASH) | 0);
+    if (o.mobile) { next[i] = mhead[c]; mhead[c] = i; nm++; }
+    else { // rooted bodies are also summarised per cell, so distant vegetation is sensed as one patch
+      next[i] = head[c]; head[c] = i; ns++;
+      const v = o.rad > 2.5 ? 1 : o.rad * 0.4, g = o.genome, a = c * 6;
+      agg[a] += v; agg[a + 1] += v * o.x; agg[a + 2] += v * o.y; agg[a + 3] += v * g[0]; agg[a + 4] += v * g[1]; agg[a + 5] += v * g[2];
+    }
+  }
+  w.nMobile = nm; w.nSessile = ns;
+}
+const _cell = [];
+function sysCanopy(w) {
+  if (w.tick % C.SLOW) return;
+  const orgs = w.orgs, n = orgs.length, rw = w.rw, rhead = w.rhead, rnext = w.rnext, N = w.N;
+  rhead.fill(-1); w.cellGround.fill(1);
+  for (let i = 0; i < n; i++) {
+    const o = orgs[i];
+    if (!o.alive || o.photoEff < 0.02) { o.gain = 0; continue; }
+    const c = ((o.y / C.RES) | 0) * rw + ((o.x / C.RES) | 0);
+    rnext[i] = rhead[c]; rhead[c] = i;
+  }
+  const A = C.RES * C.RES, g = w.P.gravity;
+  for (let c = 0; c < rhead.length; c++) {
+    if (rhead[c] < 0) continue;
+    let m = 0;
+    for (let j = rhead[c]; j >= 0; j = rnext[j]) {
+      const o = orgs[j], st = o.B < o.size ? o.B : o.size;
+      o._h = o.height * Math.sqrt(st) + (o.id % 97) * 1e-4; o._st = st;
+      _cell[m++] = o;
+    }
+    for (let a = 1; a < m; a++) { // insertion sort, tallest first
+      const o = _cell[a]; let b = a - 1;
+      while (b >= 0 && _cell[b]._h < o._h) { _cell[b + 1] = _cell[b]; b--; }
+      _cell[b + 1] = o;
+    }
+    let L = w.lightAtCell(c), total = 0;
+    const L0 = L;
+    w.cellLight[c] = L;
+    for (let a = 0; a < m; a++) {
+      const o = _cell[a];
+      const leaf = 3.5 * Math.pow(o._st, 0.6667);
+      const f = 1 - Math.exp(-C.LEAFK * leaf / A);
+      o.gain = L * f * C.CELLGAIN * o.photoEff * o.therm * o.hab;
+      L *= 1 - f; total += o.gain;
+    }
+    w.cellGround[c] = L / L0;
+    const need = total * C.SLOW * C.NUSE;
+    if (need > 0) {
+      const s = N[c] >= need ? 1 : N[c] / need;
+      N[c] -= need * s;
+      if (s < 1) for (let a = 0; a < m; a++) _cell[a].gain *= s;
+    }
+  }
+}
+
+function bite(a, t, w) {
+  const ast = a.B < a.size ? a.B : a.size;
+  if (a.cool > 0 || a.B > a.full * 1.3) return;
+  let amt = C.BITE * ast * (1 - 0.8 * t.armor) * (t.mobile ? 2 : 1);
+  if (t.mobile) { const tst = t.B < t.size ? t.B : t.size; if (tst > ast) { const q = ast / tst; amt *= q * q; } } // larger animals are hard to bite
+  if (amt > t.B) amt = t.B;
+  if (!t.mobile) {
+    const tst = t.B < t.size ? t.B : t.size;
+    if (t.height * Math.sqrt(tst) > a.reach) return; // foliage above the grazer's reach is safe
+    const stub = t.B - 0.45 * t.peak; if (stub <= 0) return; if (amt > stub) amt = stub; // roots survive grazing
+  }
+  // a bigger gut ferments plant matter more completely, so very small grazers extract less from each bite
+  const gut = a.gut; // set by the adult body plan
+  const gp = amt * t.plantness * a.herbEff * C.DIGEST * gut, gm = amt * (1 - t.plantness) * a.carnEff * (C.FLESH + C.RICH * t.herbEff); // plant-eaters have concentrated their food: their flesh is the richest
+  if (gp + gm < 0.1 * amt) return; // nothing here it can digest
+  const gainE = gp + gm - amt * t.toxin * 0.9;
+  t.B -= amt; a.B += gainE; a.cool = C.HANDLE + C.DIGTIME * amt / ast; // a big meal takes time to digest
+  a.inPlant += gp; a.inMeat += gm;
+  if (t.sp === a.sp) a.inKin += gp + gm;
+  if (t.B < 0.4 * t.peak || t.B < 0.05) w.kill(t, 'eaten', a);
+}
+
+// scent of kind: 1 for the same species, 0.6 for another species of the same genus, 0 for strangers
+function kinship(a, b) { return a === b ? 1 : a.clan === b.clan ? 0.6 : 0; }
+const _in = new Float32Array(NI), _hid = new Float32Array(NH);
+function sysBehaviour(w) {
+  const orgs = w.orgs, n = orgs.length, head = w.head, mhead = w.mhead, agg = w.agg, next = w.next, hw = w.hw, hh = w.hh;
+  const rand = w.rand, grav = w.P.gravity, sea = w.P.seaLevel, nG = w.nG, W = w.W, H = w.H, tick = w.tick;
+  for (let i = 0; i < n; i++) {
+    const o = orgs[i];
+    if (!o.alive) continue;
+    if (!o.mobile) continue;
+    let target = null;
+    if (((tick + o.id) & 1) === 0) { // sense and think on alternate ticks; act on the last decision in between
+    const R = o.range, R2 = R * R, ch = Math.cos(o.h), sh = Math.sin(o.h), herbV = o.herbEff * C.DIGEST, carnV = o.carnEff * C.FLESH;
+    let tgap = 0, md = R, mside = 0, mrel = 0, msal = 0;
+    let sR = 0, sG = 0, sB = 0, fR = 0, fG = 0, fB = 0, mR = 0, mG = 0, mB = 0, nd = R, near = null, nside = 0, nfwd = 0;
+    const cx0 = Math.max(0, ((o.x - R) / C.HASH) | 0), cx1 = Math.min(hw - 1, ((o.x + R) / C.HASH) | 0);
+    const cy0 = Math.max(0, ((o.y - R) / C.HASH) | 0), cy1 = Math.min(hh - 1, ((o.y + R) / C.HASH) | 0);
+    const ocx = (o.x / C.HASH) | 0, ocy = (o.y / C.HASH) | 0;
+    for (let cy = cy0; cy <= cy1; cy++) for (let cx = cx0; cx <= cx1; cx++) {
+      const c = cy * hw + cx, close = cx - ocx <= 1 && ocx - cx <= 1 && cy - ocy <= 1 && ocy - cy <= 1;
+      if (!close) { // far vegetation: one summed patch per cell
+        const a = c * 6, wv = agg[a];
+        if (wv > 0) {
+          const dx = agg[a + 1] / wv - o.x, dy = agg[a + 2] / wv - o.y, d2 = dx * dx + dy * dy;
+          if (d2 < R2) {
+            const d = Math.sqrt(d2) + 1e-6, vis = 1 - d / R, fwd = (dx * ch + dy * sh) / d * vis, side = (dy * ch - dx * sh) / d * vis;
+            sR += agg[a + 3] * side; sG += agg[a + 4] * side; sB += agg[a + 5] * side;
+            fR += agg[a + 3] * fwd; fG += agg[a + 4] * fwd; fB += agg[a + 5] * fwd;
+          }
+        }
+      }
+      for (let lst = 0; lst < 2; lst++) for (let j = lst ? (close ? head[c] : -1) : mhead[c]; j >= 0; j = next[j]) {
+        if (j === i) continue;
+        const t = orgs[j];
+        if (!t.alive) continue;
+        const dx = t.x - o.x, dy = t.y - o.y, d2 = dx * dx + dy * dy;
+        if (d2 > R2) continue;
+        const d = Math.sqrt(d2) + 1e-6;
+        const gap = d - o.rad - t.rad; // surface-to-surface: the nearest body is the one it would bite
+        if (gap < 0 && !t.mobile && t.biter) bite(t, o, w);
+        const fwd = (dx * ch + dy * sh) / d, side = (dy * ch - dx * sh) / d;
+        const vis = (1 - d / R) * (t.rad > 2.5 ? 1 : t.rad * 0.4) * t.cover, g = t.genome;
+        sR += vis * g[0] * side; sG += vis * g[1] * side; sB += vis * g[2] * side;
+        fR += vis * g[0] * fwd; fG += vis * g[1] * fwd; fB += vis * g[2] * fwd;
+        if (t.mobile) {
+          const mv = vis * t.thrust * t.speed * 3 * side; mR += mv * g[0]; mG += mv * g[1]; mB += mv * g[2]; // movement stands out from vegetation
+          // nearest moving animal of another species: kind is told apart by scent, so colour mimicry cannot hide it
+          if (gap < R * t.cover && t.thrust * t.speed > 0.05 && kinship(o.sp, t.sp) === 0) {
+            const sal = t.rad * t.rad / (gap > 0 ? gap + 1 : 1); // attention goes to what looms largest, not merely what is nearest
+            if (sal > msal) { msal = sal; md = gap; mside = side; mrel = t.rad / o.rad; }
+          }
+        }
+        if (gap < nd) { nd = gap; near = t; nside = side; nfwd = fwd; }
+        // the mouth closes on the most deeply overlapped body it can actually digest
+        if (gap < tgap && t.plantness * herbV + (1 - t.plantness) * carnV >= 0.1) { tgap = gap; target = t; }
+      }
+    }
+    if (!o.alive) continue;
+    const I = _in;
+    I[0] = 1; I[1] = o.B / o.full;
+    I[2] = sR; I[3] = sG; I[4] = sB; I[5] = fR; I[6] = fG; I[7] = fB;
+    if (near) {
+      const nb = target || near; // kin sense reads the body in the mouth if there is one
+      I[8] = nside; I[9] = nfwd; I[10] = nd <= 0 ? 1 : 1 - nd / R; // 1 means touching
+      I[11] = Math.tanh(Math.log((near.rad + 0.01) / o.rad) * 3);
+      I[12] = kinship(o.sp, nb.sp);
+    } else { I[8] = I[9] = I[10] = I[11] = I[12] = 0; }
+    // look ahead
+    const ax = o.x + ch * 10, ay = o.y + sh * 10;
+    let habA, thA;
+    if (ax < 0 || ay < 0 || ax >= W || ay >= H) { habA = 0; thA = 0; }
+    else {
+      habA = w.elevAt(ax, ay) < sea ? o.aqua : 1 - o.aqua;
+      if (((tick + o.id) & 7) === 0) { const d = (w.tempAt(ax, ay) - o.topt) / o.ttol; o._thA = Math.exp(-d * d); }
+      thA = o._thA;
+    }
+    I[13] = habA - o.hab; I[14] = (thA - o.therm) * 4; I[15] = rand() * 2 - 1; I[16] = mR; I[17] = mG; I[18] = mB; I[19] = o.cool > 0 ? 1 : 0;
+    if (md < R) { I[20] = mside; I[21] = md <= 0 ? 1 : 1 - md / R; I[22] = Math.tanh(Math.log(mrel) * 3); } else { I[20] = I[21] = I[22] = 0; }
+    // brain
+    const g = o.genome; let k = nG;
+    for (let h = 0; h < NH; h++) {
+      let s = 0;
+      for (let a = 0; a < NI; a++) s += g[k++] * I[a];
+      _hid[h] = Math.tanh(s);
+    }
+    let o0 = 0, o1 = 0, o2 = 0;
+    for (let h = 0; h < NH; h++) o0 += g[k++] * _hid[h]; o0 += g[k++];
+    for (let h = 0; h < NH; h++) o1 += g[k++] * _hid[h]; o1 += g[k++];
+    for (let h = 0; h < NH; h++) o2 += g[k++] * _hid[h]; o2 += g[k++];
+    o.turn = Math.tanh(o0) * 0.3; o.thrust = 1 / (1 + Math.exp(-o1)); o.mouth = o2;
+    }
+    o.h += o.turn;
+    const thrust = o.thrust, o2 = o.mouth;
+    // move
+    const st = o.B < o.size ? o.B : o.size;
+    const v = thrust * 2.4 * o.speed * (1 - 0.5 * o.armor) * (0.25 + 0.75 * o.hab) * (0.4 + 0.4 * o.rad); // stride grows with the body
+    const e0 = w.elevAt(o.x, o.y);
+    let nx = o.x + Math.cos(o.h) * v, ny = o.y + Math.sin(o.h) * v;
+    if (nx < 1) { nx = 1; o.h += 1.6; } else if (nx > W - 1) { nx = W - 1; o.h += 1.6; }
+    if (ny < 1) { ny = 1; o.h += 1.6; } else if (ny > H - 1) { ny = H - 1; o.h += 1.6; }
+    o.x = nx; o.y = ny;
+    let cost = C.MOVE * st * v * v * (o.water ? 0.5 : grav);
+    if (!o.water) { const de = w.elevAt(nx, ny) - e0; if (de > 0) cost += grav * st * de * 1.5; }
+    o.B -= cost;
+    if (target && o2 > 0 && o.biter && target.alive) bite(o, target, w);
+  }
+}
+
+function sysMetabolism(w) {
+  const orgs = w.orgs, n = orgs.length, rand = w.rand, grav = w.P.gravity, tick = w.tick;
+  const mods = upkeepModifiers, SLOW = C.SLOW, mask = SLOW - 1;
+  // rooted and motile life have separate ceilings (70% / 30%), so a carpet of seedlings cannot crowd out animal births
+  const capS = w.P.maxPop * 0.7, capM = w.P.maxPop * 0.3;
+  const rare = w.P.maxPop * 0.02;
+  const crowdS = Math.min(1, (capS - w.nSessile) / (0.12 * capS)), crowdM = Math.min(1, (capM - w.nMobile) / (0.12 * capM));
+  for (let i = 0; i < n; i++) {
+    const o = orgs[i];
+    if (!o.alive) continue;
+    const turn = ((tick + o.id) & mask) === 0;
+    let dt = 1;
+    if (o.mobile) { if (turn) w.refresh(o); }
+    else { if (!turn) continue; dt = SLOW; w.refresh(o); } // sessile life runs on a slower clock
+    const adult = o.B >= o.size, st = adult ? o.size : o.B;
+    if (st > o.peak) o.peak = st;
+    if (o.gain > 0) { o.B += o.gain * dt; o.inPhoto += o.gain * dt; }
+    const mis = 1 - o.hab;
+    let up = (adult ? o.upA : C.UPKEEP * (Math.pow(st, 0.75) + o.floor) * o.costMult) * (1 + 1.5 * (1 - o.therm)) * (1 + 1.5 * mis * mis);
+    up += grav * (o.water ? 0.15 : 1) * (adult ? o.supA : C.SUPPORT * Math.pow(st, 1.2) + C.STEM * o.height * o.height * st);
+    for (let m = 0; m < mods.length; m++) up *= mods[m](o, w);
+    o.B -= up * dt; o.age += dt; if (o.cool > 0) o.cool -= dt;
+    if (o.B > o.full * 1.5) o.B = o.full * 1.5;
+    if (o.B < C.STARVE * o.peak) w.kill(o, 'starved');
+    else if (o.age > o.life) w.kill(o, 'old');
+    else if (rand() < C.HAZARD * dt) w.kill(o, 'hazard');
+    else if (o.B >= o.full && o.age >= 30) {
+      // the ceiling is a performance guard, not ecology: it never squeezes out a rare lineage
+      const crowd = o.mobile ? crowdM : crowdS;
+      if (crowd >= 1 || rand() < crowd || (o.sp.n < rare && crowd > -1)) w.reproduce(o);
+    }
+  }
+}
+
+WP.reproduce = function (o) {
+  const p = o.p, rand = this.rand;
+  const each = p.eggB * 1.1 * (1 + 0.3 * p.disperse);
+  let k = Math.round(p.clutch);
+  const spare = o.B - p.size * C.KEEP; // a parent never spends below this share of its adult mass
+  if (k * each > spare) k = Math.floor(spare / each);
+  if (k < 1) return 0;
+  o.B -= k * each;
+  let mate;
+  const reach = p.mobile ? 3 + p.disperse * 12 : (3 + p.disperse * 70) / Math.sqrt(this.P.gravity);
+  for (let c = 0; c < k; c++) {
+    const a = rand() * 6.2832, d = reach * (0.3 + 0.7 * rand());
+    const x = clamp(o.x + Math.cos(a) * d, 1, this.W - 1), y = clamp(o.y + Math.sin(a) * d, 1, this.H - 1);
+    if (p.plantness > 0.05) { // seeds need light at ground level to establish
+      const ground = this.cellGround[((y / C.RES) | 0) * this.rw + ((x / C.RES) | 0)];
+      if (rand() > 1 - p.plantness * (1 - ground)) continue;
+    }
+    let src = o.genome;
+    if (mate === undefined) mate = p.sex > 0.02 ? this.findMate(o) : null;
+    if (mate && rand() < p.sex) { src = this.recombine(src, mate.genome); this.sexual++; }
+    const genome = this.mutate(src, p.mut);
+    const sp = this.assignSpecies(genome, o.sp);
+    if (p.dorm > 0.01 && rand() < p.dorm) { this.layResting(genome, x, y, sp, o.gen + 1, o.id, p.rest); o.kids++; continue; }
+    const child = this.spawn(genome, x, y, p.eggB, sp, o.gen + 1, o.id);
+    o.kids++; this.births++;
+    this.emit('birth', child, o);
+  }
+  return k;
+};
+
+function sysSweep(w) {
+  if (w.tick % 16 !== 15) return;
+  const orgs = w.orgs; let k = 0;
+  for (let i = 0; i < orgs.length; i++) if (orgs[i].alive) orgs[k++] = orgs[i];
+  orgs.length = k;
+}
+
+const ROLES = ['Phototroph', 'Herbivore', 'Carnivore', 'Omnivore', 'Mixotroph'];
+function roleOf(ph, pl, me, mean) {
+  let t = ph + pl + me;
+  if (t < 1e-3 && mean) { // no realised intake yet: read the genes
+    ph = mean[G.photo] * (1 - mean[G.speed]); pl = mean[G.herb]; me = mean[G.carn]; t = ph + pl + me + 1e-6;
+  }
+  ph /= t; pl /= t; me /= t;
+  if (ph > 0.7) return 0;
+  if (pl > 0.7) return 1;
+  if (me > 0.7) return 2;
+  if (ph > 0.25) return 4;
+  return 3;
+}
+function tagsOf(sp, w) {
+  const m = sp.mean, t = [], v = k => toReal(GENES[G[k]], m[G[k]]);
+  const mobile = v('speed') > 0.08, it = sp.intake, tot = it[0] + it[1] + it[2] + 1e-6;
+  if (v('aqua') > 0.65) t.push('aquatic'); else if (v('aqua') > 0.35) t.push('amphibious');
+  if (!mobile && (it[1] + it[2]) / tot > 0.25) t.push('sessile ambusher');
+  if (mobile && it[0] / tot > 0.3) t.push('motile phototroph');
+  if (v('toxin') > 0.35) t.push('toxic');
+  if (v('armor') > 0.35) t.push('armoured');
+  if (v('height') > 0.6 && sp.role === 0) t.push('canopy');
+  if (v('height') < 0.12 && sp.role === 0) t.push('ground cover');
+  if (v('size') > 25) t.push('giant'); else if (v('size') < 1.2) t.push('minute');
+  if (it[3] / tot > 0.2) t.push('cannibal');
+  if (v('clutch') > 3.5 && v('egg') < 0.2) t.push('broadcast spawner');
+  if (v('dorm') > 0.5) t.push('bet-hedger');
+  if (v('sex') > 0.7) t.push('outcrossing'); else if (v('sex') < 0.12) t.push('clonal');
+  if (v('egg') > 0.45) t.push('heavy parental investment');
+  if (v('topt') < 3) t.push('cold-adapted'); else if (v('topt') > 30) t.push('heat-adapted');
+  if (mobile && v('speed') > 0.75) t.push('sprinter');
+  if (mobile && v('sense') < 0.15) t.push('near-blind');
+  return t;
+}
+
+function sysCensus(w) {
+  if (w.tick % 100) return;
+  w.census();
+}
+WP.census = function () {
+  const w = this, nG = w.nG, nA = w.nGenome, orgs = w.orgs;
+  for (const sp of w.species.values()) { sp._sum = null; }
+  const gsum = new Float64Array(nG), roles = [0, 0, 0, 0, 0], mass = [0, 0, 0, 0, 0];
+  let pop = 0, genSum = 0;
+  for (let i = 0; i < orgs.length; i++) {
+    const o = orgs[i]; if (!o.alive) continue;
+    const sp = o.sp;
+    if (!sp._sum) { sp._sum = new Float64Array(nA); sp._it = [0, 0, 0, 0]; sp._c = 0; }
+    const s = sp._sum, g = o.genome;
+    for (let k = 0; k < nG; k++) { s[k] += g[k]; gsum[k] += g[k]; }
+    for (let k = nG; k < nA; k++) s[k] += g[k];
+    sp._it[0] += o.inPhoto; sp._it[1] += o.inPlant; sp._it[2] += o.inMeat; sp._it[3] += o.inKin; sp._c++;
+    pop++; genSum += o.gen;
+  }
+  let alive = 0;
+  for (const sp of w.species.values()) {
+    if (!sp._sum) { if (sp.n === 0) w.checkExtinct(sp); continue; }
+    if (sp.n === 0) continue;
+    alive++;
+    const m = sp.mean;
+    for (let k = 0; k < nA; k++) m[k] = sp._sum[k] / sp._c;
+    sp._sum = null;
+    sp.col = [m[0], m[1], m[2]];
+    sp.intake = sp._it;
+    sp.role = roleOf(sp._it[0], sp._it[1], sp._it[2], m);
+    sp.tags = tagsOf(sp, w);
+    roles[sp.role] += sp._c;
+    sp.hist.push(w.tick, sp._c);
+    if (sp.hist.length > 1600) { const h = sp.hist, o2 = []; for (let i = 0; i < h.length; i += 4) o2.push(h[i], h[i + 1]); sp.hist = o2; }
+    if (!sp.logged && sp._c >= 25) {
+      sp.logged = true; const par = w.species.get(sp.parent);
+      w.log('species', sp.name + ' (' + ROLES[sp.role].toLowerCase() + ') established' + (par ? ', from ' + par.name : ''), sp);
+    }
+  }
+  const mean = new Float32Array(nG);
+  if (pop) for (let k = 0; k < nG; k++) mean[k] = gsum[k] / pop;
+  w.history.push({ t: w.tick, pop, roles, species: alive, mean, gen: pop ? genSum / pop : 0, maxGen: w.maxGen });
+  if (w.history.length > 1200) { const h = w.history; w.history = h.filter((_, i) => i % 2 === 0 || i > h.length - 200); }
+  if (w.tick % 2000 === 0) w.compact();
+  w.emit('sample', w.history[w.history.length - 1]);
+};
+WP.compact = function () { // drop transient extinct twigs, reparent their descendants
+  const sp = this.species, gone = [];
+  for (const s of sp.values()) if (s.n === 0 && !s.bank && s.peak < 6 && s.parent) gone.push(s);
+  if (!gone.length) return;
+  const map = new Map();
+  for (const s of gone) map.set(s.id, s.parent);
+  const resolve = id => { while (map.has(id)) id = map.get(id); return id; };
+  for (const s of gone) sp.delete(s.id);
+  for (const s of sp.values()) if (map.has(s.parent)) s.parent = resolve(s.parent);
+};
+
+WP.step = function () {
+  const s = this.systems;
+  for (let i = 0; i < s.length; i++) s[i].fn(this);
+  this.tick++;
+};
+WP.run = function (n) { for (let i = 0; i < n; i++) this.step(); };
+
+const ALife = { World, GENES, G, C, ROLES, FOUNDERS, INPUT_LABELS, OUTPUT_LABELS, NI, NH, NO, BRAIN_N,
+  registerGene, registerDerive, registerFounder, upkeepModifiers, express, toReal, toNorm, roleOf };
+if (typeof module !== 'undefined' && module.exports) module.exports = ALife; else root.ALife = ALife;
+})(typeof window !== 'undefined' ? window : globalThis);
+
+</script>
+<script>
+/* Strata — interface. Everything here talks to the engine through its public API. */
+(function () {
+'use strict';
+const A = window.ALife, C = A.C, G = A.G, GENES = A.GENES, ROLES = A.ROLES;
+const $ = id => document.getElementById(id);
+const clamp = (v, a, b) => (v < a ? a : v > b ? b : v);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const ROLE_VARS = ['--photo', '--herb', '--carn', '--omni', '--mixo'];
+
+const state = { running: true, speed: 'max', tool: 'inspect', layer: 'terrain', dock: 'phylo', side: 'env',
+  selOrg: null, selSp: null, follow: false, seed: 7, preset: 'continents', start: 'ecosystem', wildfire: false, phColor: 'pigment' };
+const params = {};
+let world, T = {}, frameN = 0, pointerDown = false, terrDirty = true, dockDirty = true, sideDirty = true;
+
+// ---------- theme ----------
+function readTheme() {
+  const cs = getComputedStyle(document.documentElement), v = n => cs.getPropertyValue(n).trim();
+  T = { fg: v('--fg'), fg2: v('--fg-2'), fg3: v('--fg-3'), line: v('--line'), surface: v('--surface'), surface2: v('--surface-2'),
+    accent: v('--accent'), roles: ROLE_VARS.map(v), ui: v('--ui'), serif: v('--serif'), mono: v('--mono') };
+}
+function fitCanvas(cv) {
+  const dpr = Math.min(2, window.devicePixelRatio || 1), w = cv.clientWidth, h = cv.clientHeight;
+  const W = Math.max(1, Math.round(w * dpr)), H = Math.max(1, Math.round(h * dpr));
+  if (cv.width !== W || cv.height !== H) { cv.width = W; cv.height = H; }
+  const ctx = cv.getContext('2d'); ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  return { ctx, w, h };
+}
+const colOf = g => 'rgb(' + ((30 + g[0] * 215) | 0) + ',' + ((30 + g[1] * 215) | 0) + ',' + ((30 + g[2] * 215) | 0) + ')';
+const years = t => (t / C.YEAR);
+const real = (key, norm) => A.toReal(GENES[G[key]], norm);
+function fmt(v) { const a = Math.abs(v); return a >= 100 ? v.toFixed(0) : a >= 10 ? v.toFixed(1) : v.toFixed(2); }
+
+// ---------- world lifecycle ----------
+function wildfire(w) { // example extension: a disturbance system added through world.addSystem
+  if (!state.wildfire || w.tick % 300) return;
+  for (let n = 0; n < 3; n++) {
+    const x = w.rand() * w.W, y = w.rand() * w.H;
+    if (w.elevAt(x, y) < w.P.seaLevel) continue;
+    const c = ((y / C.RES) | 0) * w.rw + ((x / C.RES) | 0);
+    if (w.cellGround[c] > 0.45) continue; // only closed canopy carries fire
+    const r = 30 + w.rand() * 50; let k = 0;
+    for (const o of w.orgs) if (o.alive && !o.water && !o.mobile && Math.hypot(o.x - x, o.y - y) < r && w.rand() < 0.5 + 0.5 * o.height - 0.6 * o.armor) { w.kill(o, 'hazard'); k++; }
+    if (k > 20) w.log('user', 'Wildfire burned ' + k + ' plants');
+  }
+}
+function newWorld() {
+  world = new A.World({ seed: state.seed, preset: state.preset, start: state.start, params: Object.assign({}, params) });
+  world.addSystem('wildfire', wildfire, 'metabolism');
+  Object.assign(params, world.P);
+  state.selOrg = state.selSp = null; ph.auto = true; ph.y0 = 0; view.fit = true;
+  terrDirty = dockDirty = sideDirty = true;
+  window.strata = world; // open the console and poke at it
+}
+
+// ---------- world view ----------
+const view = { s: 1, ox: 0, oy: 0, fit: true };
+const terr = document.createElement('canvas');
+const RAMP = {
+  temp: [[-20, [38, 56, 150]], [2, [110, 168, 205]], [16, [226, 226, 198]], [30, [232, 150, 66]], [46, [160, 34, 40]]],
+  soil: [[0, [18, 20, 24]], [0.5, [176, 132, 52]], [1.2, [244, 232, 170]]],
+  light: [[0, [10, 12, 22]], [0.5, [120, 110, 70]], [1.3, [255, 240, 170]]],
+};
+function ramp(r, v) {
+  if (v <= r[0][0]) return r[0][1];
+  for (let i = 1; i < r.length; i++) if (v <= r[i][0]) {
+    const a = r[i - 1], b = r[i], t = (v - a[0]) / (b[0] - a[0]);
+    return [a[1][0] + (b[1][0] - a[1][0]) * t, a[1][1] + (b[1][1] - a[1][1]) * t, a[1][2] + (b[1][2] - a[1][2]) * t];
+  }
+  return r[r.length - 1][1];
+}
+function renderTerrain() {
+  const w = world, gw = w.gw, gh = w.gh, sea = w.P.seaLevel, layer = state.layer;
+  if (terr.width !== gw) { terr.width = gw; terr.height = gh; }
+  const ctx = terr.getContext('2d'), img = ctx.createImageData(gw, gh), d = img.data, k = C.RES / C.FINE;
+  for (let gy = 0; gy < gh; gy++) for (let gx = 0; gx < gw; gx++) {
+    const i = gy * gw + gx, e = w.elev[i], rc = ((gy / k) | 0) * w.rw + ((gx / k) | 0), water = e < sea;
+    let r, g, b;
+    if (layer === 'terrain') {
+      const temp = w.tempAt(gx * C.FINE, gy * C.FINE);
+      if (water) {
+        const t = clamp((sea - e) * 4.5, 0, 1);
+        r = 46 - 36 * t; g = 124 - 92 * t; b = 146 - 84 * t;
+        if (temp < -4) { const s = clamp((-4 - temp) / 8, 0, 0.8); r += (215 - r) * s; g += (228 - g) * s; b += (236 - b) * s; }
+      } else {
+        const h = e - sea, f = clamp(w.cap[rc] / 1.2, 0, 1), t = clamp((h - 0.2) * 4, 0, 1);
+        r = 172 - 100 * f; g = 154 - 46 * f; b = 112 - 46 * f;
+        r += (122 - r) * t; g += (116 - g) * t; b += (110 - b) * t;
+        if (temp < -2) { const s = clamp((-2 - temp) / 7, 0, 0.9); r += (232 - r) * s; g += (236 - g) * s; b += (238 - b) * s; }
+        const sh = 1 + clamp((e - w.elev[Math.max(0, i - gw - 1)]) * 7, -0.22, 0.22);
+        r *= sh; g *= sh; b *= sh;
+      }
+    } else {
+      let c;
+      if (layer === 'temp') c = ramp(RAMP.temp, (gx & 1) === 0 ? (renderTerrain._t = w.tempAt(gx * C.FINE, gy * C.FINE)) : renderTerrain._t);
+      else if (layer === 'soil') c = ramp(RAMP.soil, w.N[rc] / C.NMAX);
+      else c = ramp(RAMP.light, w.lightAtCell(rc) * w.cellGround[rc]);
+      const m = water ? 0.72 : 1; r = c[0] * m; g = c[1] * m; b = c[2] * m;
+    }
+    const j = i * 4; d[j] = r; d[j + 1] = g; d[j + 2] = b; d[j + 3] = 255;
+  }
+  ctx.putImageData(img, 0, 0);
+  terrDirty = false;
+  $('legend').textContent = { terrain: 'Greener ground holds more nutrients · shadows show stature',
+    temp: 'Temperature  −20 °C blue → 45 °C red', soil: 'Soil and water nutrients  dark = depleted', light: 'Light reaching the ground  dark = closed canopy' }[layer];
+}
+
+function drawBody(ctx, p, css, x, y, r, h) {
+  if (!p.mobile) {
+    const sh = p.height * r * 0.9;
+    if (sh > 0.6) { ctx.fillStyle = 'rgba(0,0,0,.3)'; ctx.beginPath(); ctx.arc(x + sh, y + sh, r, 0, 6.283); ctx.fill(); }
+    const n = Math.round(p.lobes);
+    ctx.beginPath();
+    for (let k = 0; k <= n; k++) {
+      const a = k / n * 6.283 + h, am = (k - 0.5) / n * 6.283 + h, px = x + Math.cos(a) * r * 0.7, py = y + Math.sin(a) * r * 0.7;
+      if (k === 0) ctx.moveTo(px, py); else ctx.quadraticCurveTo(x + Math.cos(am) * r * 1.35, y + Math.sin(am) * r * 1.35, px, py);
+    }
+    ctx.fillStyle = css; ctx.fill();
+    if (p.armor > 0.15) { ctx.lineWidth = p.armor * r * 0.35; ctx.strokeStyle = 'rgba(0,0,0,.65)'; ctx.stroke(); }
+    ctx.fillStyle = p.toxin > 0.25 ? '#fff' : 'rgba(0,0,0,.32)';
+    ctx.beginPath(); ctx.arc(x, y, r * (0.2 + 0.2 * p.toxin), 0, 6.283); ctx.fill();
+    if (p.biter) { ctx.strokeStyle = '#111'; ctx.lineWidth = Math.max(1, r * 0.12); ctx.beginPath(); ctx.arc(x, y, r * 0.5, 0, 6.283); ctx.stroke(); }
+    return;
+  }
+  ctx.save(); ctx.translate(x, y); ctx.rotate(h);
+  ctx.fillStyle = css;
+  const tl = r * (1.3 + p.speed * 1.5);
+  ctx.beginPath(); ctx.moveTo(-r * 0.6, 0); ctx.lineTo(-tl, -r * 0.55); ctx.lineTo(-tl * 0.85, 0); ctx.lineTo(-tl, r * 0.55); ctx.closePath(); ctx.fill();
+  ctx.beginPath(); ctx.ellipse(0, 0, r * 1.25, r * 0.82, 0, 0, 6.283); ctx.fill();
+  if (p.armor > 0.15) { ctx.lineWidth = p.armor * r * 0.4; ctx.strokeStyle = 'rgba(0,0,0,.7)'; ctx.stroke(); }
+  if (p.toxin > 0.25) { ctx.fillStyle = '#fff'; ctx.fillRect(-r * 0.5, -r * 0.7, r * 0.22, r * 1.4); ctx.fillRect(r * 0.05, -r * 0.78, r * 0.22, r * 1.56); }
+  if (p.photoEff > 0.15) { ctx.fillStyle = 'rgba(255,255,255,.35)'; ctx.beginPath(); ctx.arc(-r * 0.2, 0, r * 0.35, 0, 6.283); ctx.fill(); }
+  if (p.carnEff > 0.25) {
+    ctx.strokeStyle = '#111'; ctx.lineWidth = Math.max(1, r * 0.16); ctx.beginPath();
+    ctx.moveTo(r * 1.05, -r * 0.4); ctx.lineTo(r * 1.75, -r * 0.1); ctx.moveTo(r * 1.05, r * 0.4); ctx.lineTo(r * 1.75, r * 0.1); ctx.stroke();
+  }
+  const er = r * (0.12 + 0.2 * p.sense);
+  ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(r * 0.6, -r * 0.42, er, 0, 6.283); ctx.arc(r * 0.6, r * 0.42, er, 0, 6.283); ctx.fill();
+  ctx.fillStyle = '#111'; ctx.beginPath(); ctx.arc(r * 0.66, -r * 0.42, er * 0.5, 0, 6.283); ctx.arc(r * 0.66, r * 0.42, er * 0.5, 0, 6.283); ctx.fill();
+  ctx.restore();
+}
+
+function drawWorld() {
+  const cv = $('world'), { ctx, w, h } = fitCanvas(cv), W = world.W, H = world.H;
+  const fitS = Math.min(w / W, h / H);
+  if (view.fit) { view.s = fitS; view.ox = (w - W * fitS) / 2; view.oy = (h - H * fitS) / 2; }
+  if (state.follow && state.selOrg && state.selOrg.alive) { view.ox = w / 2 - state.selOrg.x * view.s; view.oy = h / 2 - state.selOrg.y * view.s; }
+  const s = view.s, ox = view.ox, oy = view.oy;
+  ctx.fillStyle = '#0b1820'; ctx.fillRect(0, 0, w, h);
+  ctx.imageSmoothingEnabled = true;
+  ctx.drawImage(terr, ox, oy, W * s, H * s);
+  const orgs = world.orgs, detail = s >= 2.6, selSp = state.selSp;
+  for (let pass = 0; pass < 2; pass++) {
+    for (let i = 0; i < orgs.length; i++) {
+      const o = orgs[i];
+      if (!o.alive || o.mobile !== (pass === 1)) continue;
+      const x = o.x * s + ox, y = o.y * s + oy;
+      if (x < -20 || y < -20 || x > w + 20 || y > h + 20) continue;
+      const css = o.css || (o.css = colOf(o.genome));
+      let r = o.rad * s;
+      if (detail) { drawBody(ctx, o.p, css, x, y, r, pass ? o.h : o.id); continue; }
+      ctx.fillStyle = css;
+      if (pass) {
+        if (r < 2.2) r = 2.2;
+        const c = Math.cos(o.h) * r, sn = Math.sin(o.h) * r;
+        ctx.beginPath(); ctx.moveTo(x + c * 1.7, y + sn * 1.7); ctx.lineTo(x - c - sn * 0.9, y - sn + c * 0.9); ctx.lineTo(x - c + sn * 0.9, y - sn - c * 0.9); ctx.closePath(); ctx.fill();
+        ctx.strokeStyle = 'rgba(0,0,0,.55)'; ctx.lineWidth = 0.75; ctx.stroke();
+      } else if (r < 1.3) ctx.fillRect(x - 1, y - 1, 2, 2);
+      else { ctx.beginPath(); ctx.arc(x, y, r, 0, 6.283); ctx.fill(); }
+    }
+  }
+  if (selSp && selSp.n > 0) {
+    ctx.strokeStyle = '#fff'; ctx.lineWidth = 1.25; ctx.beginPath();
+    for (let i = 0; i < orgs.length; i++) {
+      const o = orgs[i]; if (!o.alive || o.sp !== selSp) continue;
+      const x = o.x * s + ox, y = o.y * s + oy, r = Math.max(3.5, o.rad * s + 2.5);
+      ctx.moveTo(x + r, y); ctx.arc(x, y, r, 0, 6.283);
+    }
+    ctx.stroke();
+  }
+  const so = state.selOrg;
+  if (so && so.alive) {
+    const x = so.x * s + ox, y = so.y * s + oy;
+    ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(x, y, Math.max(7, so.rad * s + 5), 0, 6.283); ctx.stroke();
+    if (so.mobile) { ctx.lineWidth = 1; ctx.setLineDash([4, 4]); ctx.beginPath(); ctx.arc(x, y, so.range * s, 0, 6.283); ctx.stroke(); ctx.setLineDash([]); }
+  }
+  if (hoverBrush) {
+    ctx.strokeStyle = 'rgba(255,255,255,.8)'; ctx.lineWidth = 1; ctx.beginPath(); ctx.arc(hoverBrush.x, hoverBrush.y, +$('brush').value * s, 0, 6.283); ctx.stroke();
+  }
+}
+
+// world pointer tools
+let drag = null, hoverBrush = null, lastPaint = null;
+function toWorld(e) { const r = $('world').getBoundingClientRect(); return { x: (e.clientX - r.left - view.ox) / view.s, y: (e.clientY - r.top - view.oy) / view.s, cx: e.clientX - r.left, cy: e.clientY - r.top }; }
+function applyTool(e, first) {
+  const p = toWorld(e), b = +$('brush').value, t = state.tool;
+  if (p.x < 0 || p.y < 0 || p.x > world.W || p.y > world.H) return;
+  if (t === 'impact' || t === 'seed') {
+    if (!first) return;
+    if (t === 'impact') world.meteor(p.x, p.y, b);
+    else { const sp = world.seedFounder($('founder').value, 30, p.x, p.y, b); if (sp) { state.selSp = sp; state.selOrg = null; } }
+  } else {
+    if (!first && lastPaint && Math.hypot(p.x - lastPaint.x, p.y - lastPaint.y) < b * 0.3) return;
+    lastPaint = p;
+    if (t === 'raise') world.paintTerrain(p.x, p.y, b, 0.05);
+    else if (t === 'lower') world.paintTerrain(p.x, p.y, b, -0.05);
+    else if (t === 'enrich') world.paintFertility(p.x, p.y, b, 1.3);
+    else if (t === 'deplete') world.paintFertility(p.x, p.y, b, 0.75);
+  }
+  terrDirty = true; dockDirty = sideDirty = true;
+}
+function pick(e) {
+  const p = toWorld(e); let best = null, bd = Math.max(5, 9 / view.s);
+  for (const o of world.orgs) { if (!o.alive) continue; const d = Math.hypot(o.x - p.x, o.y - p.y) - o.rad * 0.5; if (d < bd) { bd = d; best = o; } }
+  state.selOrg = best; state.selSp = best ? best.sp : null; state.follow = false;
+  if (best) setTab('sidetabs', 'inspect');
+  sideDirty = dockDirty = true;
+}
+function zoomAt(cx, cy, f) {
+  const cv = $('world'), fitS = Math.min(cv.clientWidth / world.W, cv.clientHeight / world.H);
+  const ns = clamp(view.s * f, fitS * 0.9, 16);
+  if (ns <= fitS) { view.fit = true; return; }
+  view.fit = false; view.ox = cx - (cx - view.ox) * ns / view.s; view.oy = cy - (cy - view.oy) * ns / view.s; view.s = ns;
+}
+function bindWorld() {
+  const cv = $('world');
+  cv.addEventListener('pointerdown', e => {
+    cv.setPointerCapture(e.pointerId);
+    drag = { x: e.clientX, y: e.clientY, ox: view.ox, oy: view.oy, moved: false };
+    if (state.tool !== 'inspect') applyTool(e, true);
+  });
+  cv.addEventListener('pointermove', e => {
+    const p = toWorld(e);
+    hoverBrush = state.tool === 'inspect' ? null : { x: p.cx, y: p.cy };
+    if (!drag) return;
+    if (Math.hypot(e.clientX - drag.x, e.clientY - drag.y) > 4) drag.moved = true;
+    if (state.tool === 'inspect') { if (drag.moved && !view.fit) { view.ox = drag.ox + e.clientX - drag.x; view.oy = drag.oy + e.clientY - drag.y; state.follow = false; } }
+    else applyTool(e, false);
+  });
+  cv.addEventListener('pointerup', e => { if (drag && state.tool === 'inspect' && !drag.moved) pick(e); drag = null; lastPaint = null; });
+  cv.addEventListener('pointerleave', () => { hoverBrush = null; });
+  cv.addEventListener('wheel', e => { e.preventDefault(); const p = toWorld(e); zoomAt(p.cx, p.cy, Math.exp(-e.deltaY * 0.0016)); }, { passive: false });
+  $('zin').onclick = () => zoomAt(cv.clientWidth / 2, cv.clientHeight / 2, 1.6);
+  $('zout').onclick = () => zoomAt(cv.clientWidth / 2, cv.clientHeight / 2, 1 / 1.6);
+  $('zfit').onclick = () => { view.fit = true; state.follow = false; };
+}
+
+// ---------- tooltip ----------
+function tip(html, x, y) {
+  const t = $('tip');
+  if (!html) { t.hidden = true; return; }
+  t.innerHTML = html; t.hidden = false;
+  const w = t.offsetWidth, h = t.offsetHeight;
+  t.style.left = clamp(x + 14, 4, window.innerWidth - w - 4) + 'px';
+  t.style.top = clamp(y - h - 10, 4, window.innerHeight - h - 4) + 'px';
+}
+function spTip(s) {
+  return '<em>' + esc(s.name) + '</em><small>' + ROLES[s.role || 0] + ' · ' + (s.n > 0 ? s.n + ' alive' : s.bank > 0 ? 'dormant, ' + s.bank + ' resting' : 'extinct, peak ' + s.peak) +
+    ' · arose year ' + years(s.born).toFixed(1) + '</small>' + (s.tags.length ? '<small>' + esc(s.tags.join(', ')) + '</small>' : '');
+}
+
+// ---------- phylogeny ----------
+const ph = { t0: 0, t1: 1000, y0: 0, auto: true, rows: [], rowH: 16, total: 0, geom: null };
+function phyloLayout() {
+  const min = +$('ph-min').value, extant = $('ph-extant').checked, all = world.species;
+  const live = new Set();
+  for (const s of all.values()) if (s.n > 0 || s.bank > 0) { let p = s; while (p && !live.has(p.id)) { live.add(p.id); p = all.get(p.parent); } }
+  const vis = new Map();
+  for (const s of all.values()) if ((s.peak >= min || !s.parent || s === state.selSp) && (!extant || live.has(s.id))) vis.set(s.id, { sp: s, kids: [], par: null, row: 0 });
+  const roots = [];
+  for (const n of vis.values()) {
+    let p = n.sp.parent;
+    while (p && !vis.has(p)) { const ps = all.get(p); p = ps ? ps.parent : 0; }
+    if (p) { n.par = vis.get(p); n.par.kids.push(n); } else roots.push(n);
+  }
+  const rows = [], stack = roots.sort((a, b) => b.sp.born - a.sp.born).slice();
+  while (stack.length) { // preorder without recursion; later branches sit nearest their parent
+    const n = stack.pop(); n.row = rows.length; rows.push(n);
+    n.kids.sort((a, b) => a.sp.born - b.sp.born);
+    for (const k of n.kids) stack.push(k);
+  }
+  ph.rows = rows;
+}
+function niceStep(span, target) {
+  const raw = span / target, p = Math.pow(10, Math.floor(Math.log10(raw))), m = raw / p;
+  return (m < 1.5 ? 1 : m < 3.5 ? 2 : m < 7.5 ? 5 : 10) * p;
+}
+function timeAxis(ctx, x0, x1, t0, t1, y, hgt) {
+  const y0 = years(t0), y1 = years(t1), step = niceStep(y1 - y0, Math.max(3, (x1 - x0) / 90));
+  ctx.font = '500 10px ' + T.mono; ctx.fillStyle = T.fg3; ctx.strokeStyle = T.line; ctx.lineWidth = 1; ctx.textAlign = 'left'; ctx.textBaseline = 'top';
+  for (let v = Math.ceil(y0 / step) * step; v <= y1 + 1e-9; v += step) {
+    const x = Math.round(x0 + (v - y0) / (y1 - y0) * (x1 - x0)) + 0.5;
+    ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x, y + hgt); ctx.stroke();
+    ctx.fillText('yr ' + +v.toFixed(2), x + 4, y + 2);
+  }
+}
+function drawPhylo(ctx, w, h) {
+  phyloLayout();
+  const rows = ph.rows, padL = 12, padR = w < 560 ? 96 : 190, padT = 20, padB = 8;
+  if (ph.auto) { ph.t0 = 0; ph.t1 = Math.max(world.tick, 600); }
+  const rowH = clamp((h - padT - padB) / Math.max(1, rows.length), 15, 28);
+  ph.rowH = rowH; ph.total = rows.length * rowH;
+  ph.y0 = clamp(ph.y0, 0, Math.max(0, ph.total - (h - padT - padB)));
+  const X = t => padL + (t - ph.t0) / (ph.t1 - ph.t0) * (w - padL - padR), Y = r => padT + (r + 0.5) * rowH - ph.y0;
+  ph.geom = { X, Y, padT, padL, padR, w };
+  timeAxis(ctx, padL, w - padR, ph.t0, ph.t1, 0, h);
+  const now = world.tick;
+  ctx.save(); ctx.beginPath(); ctx.rect(0, padT - 4, w, h); ctx.clip();
+  ctx.strokeStyle = T.fg3; ctx.lineWidth = 1;
+  ctx.beginPath();
+  for (const n of rows) if (n.par) { const x = Math.round(X(n.sp.born)) + 0.5; ctx.moveTo(x, Y(n.par.row)); ctx.lineTo(x, Y(n.row)); }
+  ctx.stroke();
+  for (const n of rows) {
+    const s = n.sp, y = Y(n.row);
+    if (y < -rowH || y > h + rowH) continue;
+    const end = s.n > 0 ? now : (s.died >= 0 ? s.died : now), xb = X(s.born), xe = X(end), hist = s.hist;
+    const hw = c => Math.min(rowH * 0.46, 0.8 + Math.sqrt(c) * 0.34);
+    ctx.fillStyle = state.phColor === 'role' ? T.roles[s.role || 0] : colOf(s.col);
+    ctx.globalAlpha = s.n > 0 ? 1 : 0.5;
+    const step = Math.max(2, 2 * Math.ceil(hist.length / 2 / 140));
+    ctx.beginPath(); ctx.moveTo(xb, y - 0.8);
+    for (let i = 0; i < hist.length; i += step) ctx.lineTo(X(hist[i]), y - hw(hist[i + 1]));
+    const last = hist.length ? hw(hist[hist.length - 1]) : 0.8;
+    ctx.lineTo(xe, y - (s.n > 0 ? last : 0.8)); ctx.lineTo(xe, y + (s.n > 0 ? last : 0.8));
+    for (let i = hist.length - 2 - ((hist.length / 2 - 1) % (step / 2)) * 2; i >= 0; i -= step) ctx.lineTo(X(hist[i]), y + hw(hist[i + 1]));
+    ctx.lineTo(xb, y + 0.8); ctx.closePath(); ctx.fill();
+    ctx.globalAlpha = 1;
+    if (s === state.selSp) { ctx.strokeStyle = T.fg; ctx.lineWidth = 1.5; ctx.stroke(); ctx.strokeStyle = T.fg3; ctx.lineWidth = 1; }
+    if (s.n > 0 || s.bank > 0 || s === state.selSp) {
+      ctx.textBaseline = 'middle'; ctx.textAlign = 'left';
+      ctx.font = 'italic 400 15px ' + T.serif; ctx.fillStyle = T.fg;
+      const lx = Math.min(xe + 8, w - padR + 8), name = w < 560 ? s.name.split(' ')[0] : s.name;
+      ctx.fillText(name, lx, y);
+      const tw = ctx.measureText(name).width;
+      ctx.font = '500 10px ' + T.mono; ctx.fillStyle = T.fg3;
+      ctx.fillText(s.n > 0 ? String(s.n) : s.bank > 0 ? (w < 560 ? 'zz' : 'resting') : '†', lx + tw + 6, y + 1);
+    }
+  }
+  ctx.restore();
+  if (!rows.length) { ctx.fillStyle = T.fg3; ctx.font = '500 12px ' + T.ui; ctx.fillText('No lineages yet', 16, 40); }
+}
+function phyloHit(mx, my) {
+  const g = ph.geom; if (!g) return null;
+  const row = Math.floor((my - g.padT + ph.y0) / ph.rowH), n = ph.rows[row];
+  if (!n) return null;
+  const s = n.sp, xb = g.X(s.born), xe = s.n > 0 ? g.w : g.X(s.died >= 0 ? s.died : world.tick);
+  return mx >= xb - 4 && mx <= xe + 4 ? s : null;
+}
+
+// ---------- populations ----------
+let popGeom = null;
+function drawPop(ctx, w, h) {
+  const H = world.history, padL = 44, padR = 16, padT = 26, padB = 8;
+  if (H.length < 2) { ctx.fillStyle = T.fg3; ctx.font = '500 12px ' + T.ui; ctx.fillText('Collecting census data…', 16, 30); popGeom = null; return; }
+  const t0 = H[0].t, t1 = H[H.length - 1].t;
+  let max = 10; for (const s of H) if (s.pop > max) max = s.pop;
+  const lmax = Math.log10(max * 1.3);
+  const X = t => padL + (t - t0) / (t1 - t0) * (w - padL - padR), Y = v => h - padB - (v < 1 ? 0 : Math.log10(v) / lmax) * (h - padT - padB);
+  timeAxis(ctx, padL, w - padR, t0, t1, 0, h);
+  ctx.font = '500 10px ' + T.mono; ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
+  for (let v = 1; v <= max * 1.3; v *= 10) {
+    const y = Math.round(Y(v)) + 0.5; ctx.strokeStyle = T.line; ctx.beginPath(); ctx.moveTo(padL, y); ctx.lineTo(w - padR, y); ctx.stroke();
+    ctx.fillStyle = T.fg3; ctx.fillText(v >= 1000 ? v / 1000 + 'k' : v, padL - 6, y);
+  }
+  const line = (get, col, lw) => {
+    ctx.strokeStyle = col; ctx.lineWidth = lw; ctx.lineJoin = 'round'; ctx.beginPath();
+    for (let i = 0; i < H.length; i++) { const x = X(H[i].t), y = Y(get(H[i])); if (i) ctx.lineTo(x, y); else ctx.moveTo(x, y); }
+    ctx.stroke();
+  };
+  line(s => s.pop, T.fg3, 1);
+  for (let r = 0; r < 5; r++) line(s => s.roles[r], T.roles[r], 2);
+  let lx = padL + 8; ctx.textAlign = 'left'; ctx.font = '600 11px ' + T.ui;
+  const lastS = H[H.length - 1];
+  for (let r = 0; r < 5; r++) {
+    ctx.fillStyle = T.roles[r]; ctx.fillRect(lx, padT - 5, 10, 3);
+    ctx.fillStyle = T.fg; const txt = ROLES[r] + 's ' + lastS.roles[r]; ctx.fillText(txt, lx + 14, padT - 3); lx += ctx.measureText(txt).width + 30;
+    if (lx > w - 120) break;
+  }
+  popGeom = { X, t0, t1, padL, padR, w, h };
+}
+
+// ---------- trait space ----------
+let trGeom = null;
+function drawTraits(ctx, w, h) {
+  const gx = +$('tr-x').value, gy = +$('tr-y').value, dx = GENES[gx], dy = GENES[gy], H = world.history;
+  const split = w > 620 ? Math.round(w * 0.42) : 0, padT = 26, padB = 22;
+  ctx.font = '600 11px ' + T.ui; ctx.fillStyle = T.fg; ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
+  if (split && H.length > 1) { // global mean of X through time
+    const t0 = H[0].t, t1 = H[H.length - 1].t; let lo = Infinity, hi = -Infinity;
+    const vals = H.map(s => A.toReal(dx, s.mean[gx]));
+    for (const v of vals) { if (v < lo) lo = v; if (v > hi) hi = v; }
+    if (hi - lo < 1e-6) { hi += 0.5; lo -= 0.5; } const pad = (hi - lo) * 0.15; lo -= pad; hi += pad;
+    const x0 = 44, x1 = split - 20, X = t => x0 + (t - t0) / (t1 - t0) * (x1 - x0), Y = v => h - padB - (v - lo) / (hi - lo) * (h - padT - padB);
+    ctx.save(); ctx.beginPath(); ctx.rect(0, 0, split, h); ctx.clip();
+    timeAxis(ctx, x0, x1, t0, t1, padT - 8, h);
+    ctx.restore();
+    ctx.fillStyle = T.fg; ctx.font = '600 11px ' + T.ui; ctx.fillText('World mean · ' + dx.label, 12, 14);
+    ctx.font = '500 10px ' + T.mono; ctx.fillStyle = T.fg3; ctx.textAlign = 'right';
+    ctx.fillText(fmt(hi), x0 - 6, Y(hi) + 8); ctx.fillText(fmt(lo), x0 - 6, Y(lo));
+    ctx.strokeStyle = T.fg; ctx.lineWidth = 2; ctx.beginPath();
+    vals.forEach((v, i) => { const x = X(H[i].t), y = Y(v); if (i) ctx.lineTo(x, y); else ctx.moveTo(x, y); });
+    ctx.stroke();
+    ctx.fillStyle = T.fg; ctx.beginPath(); ctx.arc(X(t1), Y(vals[vals.length - 1]), 3.5, 0, 6.283); ctx.fill();
+    ctx.textAlign = 'right'; ctx.fillStyle = T.fg; ctx.font = '600 11px ' + T.mono; ctx.fillText(fmt(vals[vals.length - 1]), X(t1) - 8, Y(vals[vals.length - 1]) - 8);
+  }
+  const x0 = split + 48, x1 = w - 18, y0 = padT, y1 = h - padB - 10;
+  const X = v => x0 + v * (x1 - x0), Y = v => y1 - v * (y1 - y0);
+  ctx.strokeStyle = T.line; ctx.lineWidth = 1; ctx.strokeRect(x0 + 0.5, y0 + 0.5, x1 - x0, y1 - y0);
+  ctx.font = '600 11px ' + T.ui; ctx.fillStyle = T.fg; ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
+  ctx.fillText('Living species · ' + dy.label + ' against ' + dx.label, split + 12, 14);
+  ctx.font = '500 10px ' + T.mono; ctx.fillStyle = T.fg3;
+  ctx.textAlign = 'left'; ctx.fillText(fmt(dx.min), x0, h - 8); ctx.textAlign = 'right'; ctx.fillText(fmt(dx.max) + '  ' + dx.label, x1, h - 8);
+  ctx.fillText(fmt(dy.max), x0 - 6, y0 + 8); ctx.fillText(fmt(dy.min), x0 - 6, y1);
+  const pts = [];
+  for (const s of world.species.values()) if (s.n >= 5) pts.push({ s, x: X(s.mean[gx]), y: Y(s.mean[gy]), r: 2.5 + Math.sqrt(s.n) * 0.55 });
+  pts.sort((a, b) => b.r - a.r);
+  for (const p of pts) {
+    ctx.fillStyle = colOf(p.s.col); ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, 6.283); ctx.fill();
+    ctx.strokeStyle = p.s === state.selSp ? T.fg : T.roles[p.s.role || 0]; ctx.lineWidth = p.s === state.selSp ? 3 : 1.5; ctx.stroke();
+  }
+  trGeom = pts;
+}
+
+function drawDock() {
+  readTheme();
+  dockDirty = false;
+  if (state.dock === 'log') { renderLog(); return; }
+  const { ctx, w, h } = fitCanvas($('dockcv'));
+  ctx.clearRect(0, 0, w, h);
+  if (state.dock === 'phylo') drawPhylo(ctx, w, h);
+  else if (state.dock === 'pop') drawPop(ctx, w, h);
+  else drawTraits(ctx, w, h);
+}
+let logSig = '';
+function renderLog() {
+  const ev = world.events, sig = ev.length + ':' + (ev.length ? ev[ev.length - 1].t : 0) + ':' + world.seed;
+  if (sig === logSig) return; logSig = sig;
+  $('log').innerHTML = ev.slice(-150).reverse().map(e =>
+    '<li' + (e.sp && world.species.has(e.sp) ? ' data-sp="' + e.sp + '"' : '') + '><time>yr ' + years(e.t).toFixed(2) + '</time><span>' + esc(e.text) + '</span></li>').join('') ||
+    '<li><time></time><span class="muted">Nothing has happened yet.</span></li>';
+}
+function bindDock() {
+  const cv = $('dockcv'); let d = null;
+  const pos = e => { const r = cv.getBoundingClientRect(); return { x: e.clientX - r.left, y: e.clientY - r.top }; };
+  const hit = p => {
+    if (state.dock === 'phylo') return phyloHit(p.x, p.y);
+    if (state.dock === 'traits' && trGeom) { for (let i = trGeom.length - 1; i >= 0; i--) { const q = trGeom[i]; if (Math.hypot(q.x - p.x, q.y - p.y) < q.r + 3) return q.s; } }
+    return null;
+  };
+  cv.addEventListener('pointerdown', e => { cv.setPointerCapture(e.pointerId); const p = pos(e); d = { x: p.x, y: p.y, t0: ph.t0, t1: ph.t1, y0: ph.y0, moved: false }; });
+  cv.addEventListener('pointermove', e => {
+    const p = pos(e);
+    if (d && state.dock === 'phylo') {
+      if (Math.hypot(p.x - d.x, p.y - d.y) > 4) d.moved = true;
+      if (d.moved) {
+        const g = ph.geom, span = d.t1 - d.t0, dt = -(p.x - d.x) / (g.w - g.padL - g.padR) * span;
+        if (!ph.auto || Math.abs(p.x - d.x) > 12) { ph.auto = false; ph.t0 = d.t0 + dt; ph.t1 = d.t1 + dt; }
+        ph.y0 = d.y0 - (p.y - d.y); dockDirty = true;
+      }
+      return;
+    }
+    const s = hit(p);
+    cv.style.cursor = s ? 'pointer' : 'default';
+    if (s) tip(spTip(s), e.clientX, e.clientY);
+    else if (state.dock === 'pop' && popGeom && p.x > popGeom.padL) {
+      const H = world.history, t = popGeom.t0 + (p.x - popGeom.padL) / (popGeom.w - popGeom.padL - popGeom.padR) * (popGeom.t1 - popGeom.t0);
+      let b = H[0]; for (const q of H) if (Math.abs(q.t - t) < Math.abs(b.t - t)) b = q;
+      tip('<small>year ' + years(b.t).toFixed(2) + ' · ' + b.pop + ' organisms · ' + b.species + ' species</small>' +
+        ROLES.map((r, i) => '<small>' + r + 's ' + b.roles[i] + '</small>').join(''), e.clientX, e.clientY);
+    } else tip(null);
+  });
+  cv.addEventListener('pointerup', e => {
+    if (d && !d.moved) { const s = hit(pos(e)); if (s) selectSpecies(s); }
+    d = null;
+  });
+  cv.addEventListener('pointerleave', () => tip(null));
+  cv.addEventListener('wheel', e => {
+    if (state.dock !== 'phylo' || !ph.geom) return;
+    e.preventDefault();
+    const p = pos(e), g = ph.geom;
+    if (e.shiftKey || Math.abs(e.deltaX) > Math.abs(e.deltaY)) { ph.y0 += e.deltaY + e.deltaX; }
+    else {
+      const f = Math.exp(e.deltaY * 0.0016), tc = ph.t0 + (p.x - g.padL) / (g.w - g.padL - g.padR) * (ph.t1 - ph.t0);
+      ph.auto = false; ph.t0 = tc - (tc - ph.t0) * f; ph.t1 = tc + (ph.t1 - tc) * f;
+      if (ph.t1 - ph.t0 > world.tick * 1.5 + 2000) ph.auto = true;
+    }
+    dockDirty = true;
+  }, { passive: false });
+  $('ph-fit').onclick = () => { ph.auto = true; ph.y0 = 0; dockDirty = true; };
+  ['ph-min', 'ph-extant', 'tr-x', 'tr-y'].forEach(id => $(id).addEventListener('change', () => { dockDirty = true; }));
+  $('log').addEventListener('click', e => { const li = e.target.closest('[data-sp]'); if (li) { const s = world.species.get(+li.dataset.sp); if (s) selectSpecies(s); } });
+}
+function selectSpecies(s) { state.selSp = s; state.selOrg = null; state.follow = false; setTab('sidetabs', 'inspect'); sideDirty = dockDirty = true; }
+
+// ---------- side: environment ----------
+const CONTROLS = [
+  { h: 'Gravity' },
+  { k: 'gravity', label: 'Surface gravity', min: 0.2, max: 3, step: 0.05, f: v => v.toFixed(2) + ' g', hint: 'Raises the cost of walking, climbing, body mass and tall growth on land. Water gives buoyancy.' },
+  { h: 'Climate' },
+  { k: 'temperature', label: 'Global temperature', min: -12, max: 40, step: 0.5, f: v => v.toFixed(1) + ' °C', hint: 'Equator runs warmer, poles and peaks colder. Each lineage carries its own thermal optimum.' },
+  { k: 'seasonality', label: 'Seasonality', min: 0, max: 1, step: 0.05, f: v => (v * 100).toFixed(0) + '%', hint: 'Swing of light and warmth between hemispheres over a 2,400-tick year.' },
+  { k: 'rainfall', label: 'Rainfall', min: 0.2, max: 2, step: 0.05, f: v => v.toFixed(2) + '×', hint: 'How far inland the soil stays productive.' },
+  { h: 'Resources' },
+  { k: 'sunlight', label: 'Sunlight', min: 0.3, max: 2, step: 0.05, f: v => v.toFixed(2) + '×', hint: 'Energy at the top of the canopy. Taller growth takes it first.' },
+  { k: 'fertility', label: 'Nutrient supply', min: 0.2, max: 2.5, step: 0.05, f: v => v.toFixed(2) + '×', hint: 'Rate at which soil and water recharge. The dead are recycled where they fall.' },
+  { h: 'Mutation' },
+  { k: 'mutationRate', label: 'Mutation rate', min: 0, max: 5, step: 0.1, f: v => v.toFixed(1) + '×', hint: 'Multiplies each lineage’s own heritable mutation rate.' },
+  { k: 'mutationSize', label: 'Mutation effect', min: 0.3, max: 3, step: 0.1, f: v => v.toFixed(1) + '×', hint: 'How far a single mutation moves a trait or a neural weight.' },
+  { h: 'Geography' },
+  { k: 'seaLevel', label: 'Sea level', min: 0.2, max: 0.7, step: 0.01, f: v => (v * 100).toFixed(0), hint: 'Flood land bridges to isolate populations, or drain straits to rejoin them.' },
+];
+const LIMITS = [
+  { k: 'maxPop', label: 'Organism ceiling', min: 1500, max: 8000, step: 250, f: v => v.toFixed(0), hint: 'A performance guard. Births thin out evenly as the world approaches it.' },
+  { k: 'immigration', label: 'Immigration', min: 0, max: 3, step: 0.25, f: v => v === 0 ? 'off' : v.toFixed(2) + '×', hint: 'Optional rescue from off the map: when a whole feeding guild dies out, a few colonists arrive. Off by default; lineages persist through resting eggs and seeds instead.' },
+  { k: 'speciation', label: 'Species boundary', min: 0.08, max: 0.3, step: 0.01, f: v => v.toFixed(2), hint: 'Genetic distance from a lineage’s moving centre at which a newborn founds a new species.' },
+];
+function ctlHTML(c) {
+  if (c.h) return '<h2>' + c.h + '</h2>';
+  return '<div class="ctl"><label for="c-' + c.k + '">' + c.label + '</label><output id="o-' + c.k + '"></output>' +
+    '<input type="range" id="c-' + c.k + '" min="' + c.min + '" max="' + c.max + '" step="' + c.step + '"><small>' + c.hint + '</small></div>';
+}
+function buildEnv() {
+  $('p-env').innerHTML = CONTROLS.map(ctlHTML).join('') +
+    '<div class="row"><select id="preset" aria-label="Landform"><option value="continents">Continents</option><option value="pangaea">Supercontinent</option><option value="twin">Twin continents</option>' +
+    '<option value="archipelago">Archipelago</option><option value="ridge">Mountain divide</option><option value="ocean">Ocean world</option></select>' +
+    '<input type="number" id="seed" min="1" max="99999" aria-label="World seed"></div>' +
+    '<div class="row"><button class="btn small" id="reform">Reshape land, keep life</button></div>' +
+    '<small class="muted">Paint land, soil and impacts directly on the map with the tools above it.</small>' +
+    '<h2>New world</h2><div class="row"><select id="start" aria-label="Starting life"><option value="ecosystem">Seeded: plants, algae, grazers, hunters</option><option value="proto">Single ancestor: one proto-cell</option></select></div>' +
+    '<div class="row"><button class="btn" id="reset">Start a new world</button></div>' +
+    '<h2>World rules</h2>' + LIMITS.map(ctlHTML).join('');
+  for (const c of CONTROLS.concat(LIMITS)) {
+    if (c.h) continue;
+    const inp = $('c-' + c.k), out = $('o-' + c.k);
+    inp.value = world.P[c.k]; out.textContent = c.f(+inp.value);
+    inp.addEventListener('input', () => {
+      const v = +inp.value; out.textContent = c.f(v); params[c.k] = v; world.setParam(c.k, v);
+      if (c.k === 'seaLevel' || c.k === 'rainfall' || c.k === 'fertility' || c.k === 'temperature') terrDirty = true;
+    });
+    inp.addEventListener('change', () => world.log('user', c.label + ' set to ' + c.f(+inp.value)));
+  }
+  $('preset').value = state.preset; $('seed').value = state.seed; $('start').value = state.start;
+  $('preset').onchange = e => { state.preset = e.target.value; };
+  $('seed').onchange = e => { state.seed = clamp(+e.target.value || 1, 1, 99999); };
+  $('start').onchange = e => { state.start = e.target.value; };
+  $('reform').onclick = () => { world.generateTerrain(state.preset, state.seed); world.log('user', 'Landscape reshaped'); terrDirty = true; };
+  $('reset').onclick = () => { newWorld(); };
+}
+
+// ---------- side: life ----------
+function geneRows(norm, ref) {
+  let html = '', grp = '';
+  for (const d of GENES) {
+    if (d.group !== grp) { grp = d.group; html += '<h2>' + grp + '</h2>'; }
+    const v = norm[d.index];
+    html += '<div class="gene"><span>' + d.label + '</span><span class="track"><i style="width:' + (v * 100).toFixed(1) + '%"></i>' +
+      (ref ? '<b style="left:' + (ref[d.index] * 100).toFixed(1) + '%"></b>' : '') + '</span><span>' + fmt(A.toReal(d, v)) + '</span></div>';
+  }
+  return html;
+}
+function dietHTML(it) {
+  const t = it[0] + it[1] + it[2];
+  if (t < 1e-6) return '<p class="muted">No intake recorded yet.</p>';
+  const pc = i => (it[i] / t * 100);
+  return '<div class="diet"><i style="width:' + pc(0) + '%;background:var(--photo)"></i><i style="width:' + pc(1) + '%;background:var(--herb)"></i><i style="width:' + pc(2) + '%;background:var(--carn)"></i></div>' +
+    '<div class="dietkey"><span><i class="dot" style="background:var(--photo)"></i>Light ' + pc(0).toFixed(0) + '%</span><span><i class="dot" style="background:var(--herb)"></i>Plants ' + pc(1).toFixed(0) +
+    '%</span><span><i class="dot" style="background:var(--carn)"></i>Flesh ' + pc(2).toFixed(0) + '%</span></div>';
+}
+function roleChip(r) { return '<span class="chip role"><i class="dot" style="background:var(' + ROLE_VARS[r || 0] + ')"></i>' + ROLES[r || 0] + '</span>'; }
+function portrait(p, col, heading) {
+  const cv = $('portrait'); if (!cv) return;
+  const { ctx, w, h } = fitCanvas(cv);
+  ctx.clearRect(0, 0, w, h);
+  const r = clamp(10 + Math.cbrt(p.size) * 9, 14, 44);
+  drawBody(ctx, p, col, w / 2 - (p.mobile ? 0 : r * 0.3), h / 2 - (p.mobile ? 0 : r * 0.3), r, heading);
+}
+function drawBrain(o) {
+  const cv = $('brain'); if (!cv) return;
+  const { ctx, w, h } = fitCanvas(cv), g = o.genome, nG = world.nG, NI = A.NI, NH = A.NH, NO = A.NO;
+  ctx.clearRect(0, 0, w, h);
+  const xi = 92, xh = w * 0.56, xo = w - 58, yi = i => 10 + i * (h - 20) / (NI - 1), yh = i => 30 + i * (h - 60) / (NH - 1), yo = i => h * 0.25 + i * h * 0.25;
+  const edge = (x1, y1, x2, y2, wt) => {
+    const a = Math.min(1, Math.abs(wt) / 2.5); if (a < 0.06) return;
+    ctx.globalAlpha = a; ctx.strokeStyle = wt > 0 ? T.accent : T.roles[2]; ctx.lineWidth = 0.6 + a * 1.8;
+    ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
+  };
+  for (let hI = 0; hI < NH; hI++) for (let i = 0; i < NI; i++) edge(xi, yi(i), xh, yh(hI), g[nG + hI * NI + i]);
+  for (let oI = 0; oI < NO; oI++) for (let hI = 0; hI < NH; hI++) edge(xh, yh(hI), xo, yo(oI), g[nG + NI * NH + oI * (NH + 1) + hI]);
+  ctx.globalAlpha = 1; ctx.font = '500 9px ' + T.mono; ctx.textBaseline = 'middle';
+  ctx.textAlign = 'right'; ctx.fillStyle = T.fg2;
+  for (let i = 0; i < NI; i++) { ctx.fillText(A.INPUT_LABELS[i], xi - 7, yi(i)); ctx.beginPath(); ctx.arc(xi, yi(i), 2.5, 0, 6.283); ctx.fill(); }
+  for (let i = 0; i < NH; i++) { ctx.beginPath(); ctx.arc(xh, yh(i), 4, 0, 6.283); ctx.fill(); }
+  ctx.textAlign = 'left';
+  for (let i = 0; i < NO; i++) { ctx.beginPath(); ctx.arc(xo, yo(i), 4, 0, 6.283); ctx.fill(); ctx.fillText(A.OUTPUT_LABELS[i], xo + 8, yo(i)); }
+}
+function renderLife() {
+  sideDirty = false;
+  const el = $('p-inspect'), keep = el.scrollTop, H = world.history, gmean = H.length ? H[H.length - 1].mean : null;
+  let o = state.selOrg, s = state.selSp;
+  if (o && !o.alive) { o = state.selOrg = null; }
+  if (o) {
+    const sp = o.sp;
+    el.innerHTML = '<button class="link" data-act="all">All living species</button>' +
+      '<h2>Individual #' + o.id + '</h2><p class="sp-name">' + esc(sp.name) + '</p>' +
+      '<div class="chips">' + roleChip(A.roleOf(o.inPhoto, o.inPlant, o.inMeat, o.genome)) + '<span class="chip">' + (o.mobile ? 'motile' : 'sessile') + '</span><span class="chip">' + (o.water ? 'in water' : 'on land') + '</span></div>' +
+      '<canvas class="portrait" id="portrait"></canvas>' +
+      '<dl class="kv"><div><dt>Age</dt><dd>' + o.age + ' / ' + (o.life | 0) + '</dd></div><div><dt>Biomass</dt><dd>' + fmt(o.B) + '</dd></div><div><dt>Generation</dt><dd>' + o.gen + '</dd></div>' +
+      '<div><dt>Offspring</dt><dd>' + o.kids + '</dd></div><div><dt>Thermal fit</dt><dd>' + (o.therm * 100).toFixed(0) + '%</dd></div><div><dt>Habitat fit</dt><dd>' + (o.hab * 100).toFixed(0) + '%</dd></div></dl>' +
+      '<div class="row"><button class="btn small" data-act="follow">' + (state.follow ? 'Stop following' : 'Follow') + '</button><button class="btn small" data-act="species">View species</button></div>' +
+      '<h2>Lifetime energy intake</h2>' + dietHTML([o.inPhoto, o.inPlant, o.inMeat]) +
+      (o.mobile ? '<h2>Neural controller</h2><canvas id="brain" style="width:100%;height:230px;display:block"></canvas><small class="muted">Blue wires excite, red inhibit. Every weight is heritable.</small>' : '') +
+      '<h2>Genome</h2><small class="muted">Bar: this individual. Marker: its species mean.</small>' + geneRows(o.genome, sp.mean);
+    portrait(o.p, colOf(o.genome), o.mobile ? -0.4 : o.id); if (o.mobile) drawBrain(o);
+  } else if (s && world.species.has(s.id)) {
+    const par = world.species.get(s.parent), p = A.express(s.mean);
+    const kids = []; for (const k of world.species.values()) if (k.parent === s.id && k.peak >= 10) kids.push(k);
+    el.innerHTML = '<button class="link" data-act="all">All living species</button>' +
+      '<h2>Species</h2><p class="sp-name">' + esc(s.name) + '</p>' +
+      '<div class="chips">' + roleChip(s.role) + s.tags.map(t => '<span class="chip">' + esc(t) + '</span>').join('') + (s.n === 0 ? '<span class="chip">' + (s.bank > 0 ? 'dormant' : 'extinct') + '</span>' : '') + '</div>' +
+      '<canvas class="portrait" id="portrait"></canvas>' +
+      '<dl class="kv"><div><dt>Alive</dt><dd>' + s.n + '</dd></div><div><dt>Resting</dt><dd>' + (s.bank || 0) + '</dd></div><div><dt>Peak</dt><dd>' + s.peak + '</dd></div>' +
+      '<div><dt>Arose</dt><dd>yr ' + years(s.born).toFixed(1) + '</dd></div><div><dt>' + (s.n ? 'Age' : 'Lasted') + '</dt><dd>' + years((s.n ? world.tick : s.died) - s.born).toFixed(1) + ' yr</dd></div><div><dt>Lineage depth</dt><dd>' + s.gen + '</dd></div><div><dt>Kin eaten</dt><dd>' +
+      (s.intake[1] + s.intake[2] > 1e-6 ? (s.intake[3] / (s.intake[1] + s.intake[2]) * 100).toFixed(0) + '%' : '–') + '</dd></div></dl>' +
+      '<p>' + (par ? 'Descends from <button class="link" data-sp="' + par.id + '"><i>' + esc(par.name) + '</i></button>. ' : 'A founding lineage. ') +
+      (kids.length ? 'Gave rise to ' + kids.slice(0, 8).map(k => '<button class="link" data-sp="' + k.id + '"><i>' + esc(k.name) + '</i></button>').join(', ') + (kids.length > 8 ? ' and ' + (kids.length - 8) + ' more' : '') + '.' : '') + '</p>' +
+      '<h2>Realised diet of living members</h2>' + dietHTML(s.intake) +
+      '<h2>Mean genome</h2><small class="muted">Bar: species mean. Marker: mean of all life.</small>' + geneRows(s.mean, gmean);
+    portrait(p, colOf(s.col), -0.4);
+  } else {
+    state.selSp = null;
+    const list = [...world.species.values()].filter(x => x.n > 0).sort((a, b) => b.n - a.n).slice(0, 40);
+    el.innerHTML = '<h2>Living species · ' + [...world.species.values()].filter(x => x.n >= 5).length + '</h2>' +
+      '<p class="muted">Select a row, a branch of the tree, or any organism on the map. Diet labels come from what members actually ate, not from their genes.</p>' +
+      '<table class="spp"><thead><tr><th>Species</th><th style="text-align:right">Alive</th></tr></thead><tbody>' +
+      list.map(x => '<tr data-sp="' + x.id + '"><td><i class="dot" style="background:' + colOf(x.col) + '"></i> <em>' + esc(x.name) + '</em><small>' + ROLES[x.role || 0] + (x.tags.length ? ' · ' + esc(x.tags.join(', ')) : '') + '</small></td><td class="n">' + x.n + '</td></tr>').join('') +
+      '</tbody></table>';
+  }
+  el.scrollTop = keep;
+}
+function bindLife() {
+  $('p-inspect').addEventListener('click', e => {
+    const a = e.target.closest('[data-act]'), sp = e.target.closest('[data-sp]');
+    if (a) {
+      const act = a.dataset.act;
+      if (act === 'all') { state.selOrg = state.selSp = null; }
+      else if (act === 'follow') { state.follow = !state.follow; if (state.follow && view.s < 3) { view.fit = false; view.s = 4; } }
+      else if (act === 'species') { state.selOrg = null; }
+    } else if (sp) { const s = world.species.get(+sp.dataset.sp); if (s) { state.selSp = s; state.selOrg = null; $('p-inspect').scrollTop = 0; } }
+    else return;
+    sideDirty = dockDirty = true; renderLife();
+  });
+}
+
+// ---------- side: engine ----------
+function renderEngine() {
+  $('p-engine').innerHTML =
+    '<h2>How it works</h2><p>Every organism runs the same rules. A genome of ' + GENES.length + ' traits and ' + A.BRAIN_N +
+    ' neural weights sets its body, diet, senses and behaviour. Nothing is labelled plant or predator: a lineage is whatever its genes let it get away with. Selection is only birth and death.</p>' +
+    '<h2>Tick pipeline</h2><ol class="pipe">' + world.systems.map(s => '<li>' + esc(s.name) + '</li>').join('') + '</ol>' +
+    '<h2>Example extension</h2><div class="row"><label style="display:flex;gap:6px;align-items:center"><input type="checkbox" id="wf"' + (state.wildfire ? ' checked' : '') + '> Wildfire system</label></div>' +
+    '<small class="muted">Added with <code>world.addSystem</code>. Fire takes hold under closed canopy and favours short or armoured growth.</small>' +
+    '<h2>Extend it</h2><p>The engine is one DOM-free file. The running world is exposed as <code>window.strata</code>.</p>' +
+    '<pre class="code">// a new heritable trait, before creating a World\nALife.registerGene({ key: \'glow\', label: \'Bioluminescence\',\n  group: \'Appearance\', min: 0, max: 1 });\nALife.upkeepModifiers.push(o =&gt; 1 + 0.2 * o.p.glow);\n\n// a new rule in the tick pipeline\nworld.addSystem(\'drought\', w =&gt; {\n  if (w.tick % 2400 === 0) w.setParam(\'rainfall\',\n    0.4 + w.rand());\n}, \'canopy\');\n\n// observe evolution as it happens\nworld.on(\'speciation\', (child, parent) =&gt;\n  console.log(parent.name, \'→\', child.name));</pre>' +
+    '<h2>Registered founders</h2><p>' + Object.keys(A.FOUNDERS).map(k => esc(A.FOUNDERS[k].label)).join(', ') + '. Add your own with <code>ALife.registerFounder</code>, then place it with the Seed tool.</p>';
+  $('wf').onchange = e => { state.wildfire = e.target.checked; world.log('user', 'Wildfire system ' + (state.wildfire ? 'enabled' : 'disabled')); };
+}
+
+// ---------- chrome ----------
+function seg(id, key, cb) {
+  $(id).addEventListener('click', e => {
+    const b = e.target.closest('button[data-v]'); if (!b) return;
+    for (const x of $(id).querySelectorAll('button')) x.setAttribute('aria-pressed', x === b ? 'true' : 'false');
+    state[key] = b.dataset.v; if (cb) cb(b.dataset.v);
+  });
+}
+function setTab(id, v) {
+  for (const b of $(id).querySelectorAll('.tab')) b.setAttribute('aria-selected', b.dataset.v === v ? 'true' : 'false');
+  if (id === 'sidetabs') {
+    state.side = v; $('p-env').hidden = v !== 'env'; $('p-inspect').hidden = v !== 'inspect'; $('p-engine').hidden = v !== 'engine';
+    if (v === 'engine') renderEngine(); sideDirty = true;
+  } else {
+    state.dock = v; $('dockcv').hidden = v === 'log'; $('logwrap').hidden = v !== 'log';
+    $('tools-phylo').hidden = v !== 'phylo'; $('tools-traits').hidden = v !== 'traits'; logSig = ''; dockDirty = true;
+  }
+}
+function bindChrome() {
+  $('play').onclick = () => { state.running = !state.running; $('play').textContent = state.running ? 'Pause' : 'Run'; };
+  seg('speed', 'speed');
+  seg('layer', 'layer', () => { terrDirty = true; });
+  seg('ph-color', 'phColor', () => { dockDirty = true; });
+  seg('tool', 'tool', v => { $('brushwrap').hidden = v === 'inspect'; $('founder').hidden = v !== 'seed'; $('world').style.cursor = v === 'inspect' ? 'grab' : 'crosshair'; });
+  for (const id of ['docktabs', 'sidetabs']) $(id).addEventListener('click', e => { const b = e.target.closest('.tab'); if (b) setTab(id, b.dataset.v); });
+  $('founder').innerHTML = Object.keys(A.FOUNDERS).map(k => '<option value="' + k + '">' + esc(A.FOUNDERS[k].label) + '</option>').join('');
+  const opts = GENES.map(d => '<option value="' + d.index + '">' + esc(d.label) + '</option>').join('');
+  $('tr-x').innerHTML = opts; $('tr-y').innerHTML = opts; $('tr-x').value = G.size; $('tr-y').value = G.height;
+  window.addEventListener('pointerdown', () => { pointerDown = true; });
+  window.addEventListener('pointerup', () => { pointerDown = false; });
+  window.addEventListener('resize', () => { dockDirty = true; });
+  window.addEventListener('keydown', e => { if (e.code === 'Space' && !/INPUT|SELECT|BUTTON|TEXTAREA/.test(e.target.tagName)) { e.preventDefault(); $('play').click(); } });
+}
+
+// ---------- main loop ----------
+let tpsT = performance.now(), tpsN = 0, tps = 0;
+function frame() {
+  const t0 = performance.now();
+  if (state.running) {
+    const budget = state.speed === 'max' ? 48 : 40, n = state.speed === 'max' ? 1e9 : +state.speed;
+    let i = 0;
+    do { world.step(); i++; } while (i < n && performance.now() - t0 < budget);
+    tpsN += i;
+  }
+  frameN++;
+  if (terrDirty || (frameN % 45 === 0 && state.running)) renderTerrain();
+  if (state.speed !== 'max' || !state.running || frameN % 3 === 0) drawWorld(); // at Max, most of each frame goes to simulation
+  if (frameN % 12 === 0) {
+    const now = performance.now(); tps = tpsN / ((now - tpsT) / 1000); tpsT = now; tpsN = 0;
+    let spp = 0; for (const s of world.species.values()) if (s.n >= 5) spp++;
+    $('r-year').textContent = years(world.tick).toFixed(1); $('r-gen').textContent = world.maxGen.toLocaleString();
+    $('r-pop').textContent = world.orgs.length.toLocaleString(); $('r-spp').textContent = spp; $('r-tps').textContent = Math.round(tps).toLocaleString();
+  }
+  if (dockDirty || frameN % 24 === 0) drawDock();
+  if (state.side === 'inspect' && !pointerDown && (sideDirty || frameN % 40 === 0)) renderLife();
+  requestAnimationFrame(frame);
+}
+
+function start() {
+  readTheme(); newWorld(); bindChrome(); bindWorld(); bindDock(); bindLife(); buildEnv();
+  world.run(300); // open on a world that is already alive
+  $('world').style.cursor = 'grab';
+  requestAnimationFrame(frame);
+}
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { dockDirty = true; });
+start();
+})();
+
+</script>
+
+</body>
+</html>
